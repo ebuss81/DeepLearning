@@ -1,0 +1,127 @@
+# ===================================
+#  Python
+# ===================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+*.nbconvert.ipynb
+
+# PyCharm / VS Code / JetBrains IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# mypy / static analysis
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+*.orig
+*.dat
+*.csv
+*.tsv
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===================================
+#  Project-specific (optional)
+# ===================================
+
+# Jupyter runtime and metadata
+.jupyter/
+
+# Compiled notebooks or HTML exports
+*.html
+
+# Local data
+data/
+datasets/
+logs/
+output/
+results/
+checkpoints/
+
+# If using Docker
+*.pid
+*.tar
+*.log
+docker-compose.override.yml
+
+# If using Poetry
+poetry.lock
+
+# If using pipenv
+Pipfile.lock
+
+# ===================================
+#  Custom additions
+# ===================================
+
+# Temporary experiments or scratch work
+scratch/
+tmp/
