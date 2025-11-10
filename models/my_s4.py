@@ -4,8 +4,8 @@ import torch.nn as nn
 
 import sys
 #sys.path.insert(0, '/home/wp/Documents/GitHub/DataProcessing/DeepLearning/s4/models')
-from DeepLearning.models.s4.models.s4.s4d import S4D
-
+#from DeepLearning.models.s4.models.s4.s4d import S4D
+from models.s4.models.s4.s4d import S4D
 # Dropout broke in PyTorch 1.11
 if tuple(map(int, torch.__version__.split('.')[:2])) == (1, 11):
     print("WARNING: Dropout is bugged in PyTorch 1.11. Results may be worse.")

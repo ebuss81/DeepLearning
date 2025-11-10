@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange, repeat
 
-from DeepLearning.models.s4.src.models.nn import DropoutNd
+from models.s4.src.models.nn import DropoutNd
 #DeepLearning.models.s4.models.s4.s4d
 
 class S4DKernel(nn.Module):

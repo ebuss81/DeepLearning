@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
 
-from DeepLearning.models.s4.src.models.nn.activation import Activation
+from models.s4.src.models.nn.activation import Activation
 
 contract = torch.einsum
 
