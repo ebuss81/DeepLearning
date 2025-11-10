@@ -189,6 +189,9 @@ def main():
             if "negative padding" in str(e):
                 print (f"[Trial {trial.number}] Invalid padding -> pruned")
                 raise optuna.TrialPruned()
+            if "Output size is too small" in str(e):
+		print (f"[Trial {trial.number}] Output size is too small  -> pruned")
+                raise optuna.TrialPruned(
             else:
                 raise
 

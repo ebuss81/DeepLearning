@@ -23,7 +23,7 @@ class CNN1D(nn.Module):
             if k % 2 == 0:
                 k += 1
 
-            print(k)
+            #print(k)
             # Conv block: Conv -> BN -> ReLU
             layers += [
                 nn.Conv1d(in_ch, d_model, kernel_size=kernel_size, padding=kernel_size // 2),
