@@ -136,7 +136,7 @@ def main():
                          "metric": args.metric,
                          "val_metric": best_val_metric,
                          "epoch": epoch},
-                        out_dir=args.checkpoint_dir+f"{args.model}/",
+                        out_dir=args.checkpoint_dir+f"/{args.model}/",
                         name=ckpt_name,
                     )
 
