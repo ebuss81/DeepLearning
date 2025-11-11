@@ -85,7 +85,7 @@ dmypy.json
 *.bak
 *.orig
 *.dat
-*.csv
+#*.csv
 *.tsv
 
 # OS / editor files
