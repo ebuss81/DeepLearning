@@ -10,6 +10,7 @@ Example:
 
 import os
 import argparse
+from random import choices
 
 import torch
 import torch.nn as nn
@@ -41,6 +42,7 @@ def get_args():
     parser.add_argument('--dev_path', type=str, default='Data_raw/Raw_TS_Classification_dev_1722_samples.pt')
     parser.add_argument('--test_path', type=str, default='Data_raw/Raw_TS_Classification_test_574_samples.pt')
     parser.add_argument('--model', type=str, default='s4', choices=['CNN1D', 'Inception1D', 's4'])
+    parser.add_argument('--metric', type=str, default='f1_macro', choices=["acc, f1_macro"])
 
     # HPO setup
     parser.add_argument("--n_trials", type=int, default=30,
@@ -52,7 +54,7 @@ def get_args():
 
     # General
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--checkpoint_dir", type=str, default="optuna_checkpoints")
+    parser.add_argument("--checkpoint_dir", type=str, default=f"optuna_results")
 
     return parser.parse_args()
 
@@ -82,16 +84,7 @@ def main():
     # ---------------------------
     def objective(trial: optuna.Trial) -> float:
         try:
-            # ---- sample hyperparameters ----
-            """"
-            lr = trial.suggest_float("lr", 1e-4, 1e-1)
-            weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
-            d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
-            n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
-            dropout = trial.suggest_float("dropout", 0.0, 0.5)
-            label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
-            batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
-            """
+            # ---- load model ----
             if args.model == "CNN1D":
                 model, lr, weight_decay, label_smoothing, batch_size = CNN_details(trial, device, d_input, d_output)
             elif args.model == "Inception1D":
@@ -101,7 +94,6 @@ def main():
             else:
                 raise ValueError(f"Unknown model: {args.model}")
 
-            # you can also tune epochs per trial if you want, but usually fix max_epochs
             max_epochs = args.max_epochs
 
             # ---- dataloaders (depend on batch_size) ----
@@ -111,18 +103,6 @@ def main():
                 num_workers=2,
                 device=device,
             )
-            """
-
-            # ---- model / loss / optimizer / sched ----
-            model = build_cnn1d(
-                d_input=d_input,
-                d_output=d_output,
-                d_model=d_model,
-                n_layers=n_layers,
-                dropout=dropout,
-                kernel_size=51, #Note: also variable maybe?
-            ).to(device)
-            """
 
             criterion = nn.CrossEntropyLoss(
                 weight=class_weights.to(device),
@@ -130,35 +110,20 @@ def main():
             )
 
             param_groups = make_param_groups(model, weight_decay=weight_decay)
-            if args.model == "s4":
-                optimizer, scheduler = s4_optimizer(
-                    model, lr=lr, weight_decay=weight_decay, epochs=max_epochs
-                )
+            if args.model == "s4": # s4 has its own optimizer + scheduler
+                optimizer, scheduler = s4_optimizer(model, lr=lr, weight_decay=weight_decay, epochs=max_epochs)
             else:
                 optimizer = optim.AdamW(param_groups, lr=lr)
-
-                scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-                optimizer, T_max=max_epochs
-                )
+                scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
 
             best_val_metric = 0.0
 
             # ---- training loop for this trial ----
             for epoch in range(max_epochs):
                 current_lr = optimizer.param_groups[0]["lr"]
-                #trial.report(best_val_acc, step=epoch)  # report last best before training
 
-                # Optuna pruning check (based on reported metric)
-                #if trial.should_prune():
-                #    raise optuna.TrialPruned()
-
-                train_metrics = train_one_epoch(
-                    model, trainloader, optimizer, criterion, device
-                )
-                val_metrics = evaluate(
-                    model, valloader, criterion, device, split_name="val"
-                )
-
+                train_metrics = train_one_epoch(model, trainloader, optimizer, criterion, device)
+                val_metrics = evaluate(model, valloader, criterion, device, split_name="val")
                 scheduler.step()
 
                 val_metric = val_metrics["f1_macro"]
@@ -168,9 +133,10 @@ def main():
                     ckpt_name = f"trial_{trial.number}_best.pth"
                     save_checkpoint(
                         {"model": model.state_dict(),
+                         "metric": args.metric,
                          "val_metric": best_val_metric,
                          "epoch": epoch},
-                        out_dir=args.checkpoint_dir,
+                        out_dir=args.checkpoint_dir+f"{args.model}/",
                         name=ckpt_name,
                     )
 
@@ -217,7 +183,7 @@ def main():
 
     # optionally save study
     os.makedirs("optuna_results", exist_ok=True)
-    study.trials_dataframe().to_csv("optuna_results/study_trials.csv", index=False)
+    study.trials_dataframe().to_csv(f"optuna_results/{args.model}/study_trials.csv", index=False)
 
 
 if __name__ == "__main__":

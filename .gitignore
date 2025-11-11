@@ -7,6 +7,8 @@ __pycache__/
 
 # pytorch
 *.pth
+optuna_results/
+models/**/checkpoint/
 # C extensions
 *.so
 
