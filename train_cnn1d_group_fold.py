@@ -104,7 +104,7 @@ def main():
     X_dev = dev_data["X"].float()      # [N_dev, L] or [N_dev, L, 1]
     y_dev = dev_data["y"].long()      # [N_dev]
     print(X_dev)
-    groups_df = pd.read_csv("/home/wp/Documents/GitHub/DataProcessing/BotanicalGardenTomato/Raw_TS_Classification/Raw_TS_Classification_groups_3446_samples.csv")
+    groups_df = pd.read_csv("/DeepLearning/Data_raw/Raw_TS_Classification_groups_3446_samples.csv")
     groups_dev = groups_df["plant_id"]   # [N_dev] group IDs
 
     X_test = test_data["X"].float()
