@@ -182,7 +182,7 @@ def main():
         print(f"    {k}: {v}")
 
     # optionally save study
-    os.makedirs("optuna_results", exist_ok=True)
+    os.makedirs(f"optuna_results/{args.model}", exist_ok=True)
     study.trials_dataframe().to_csv(f"optuna_results/{args.model}/study_trials.csv", index=False)
 
 
