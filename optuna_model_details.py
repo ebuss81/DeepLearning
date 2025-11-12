@@ -40,8 +40,8 @@ def Inception_details(trial,device, d_input, d_output):
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     num_blocks = trial.suggest_int("num_blocks", 2, 6)
     out_channels = trial.suggest_categorical("out_channels", [8, 16, 32, 64])
-    bottleneck_channels = trial.suggest_categorical("bottleneck_channels", [8, 16, 32, 64])
-    kernel_size = trial.suggest_categorical("kernel_size", [9, 19, 29, 39, 49])
+    bottleneck_channels = trial.suggest_categorical("bottleneck_channels", [2, 4, 8, 16, 32, 64])
+    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 19, 29, 39, 49])
 
     # ---- model / loss / optimizer / sched ----
     model = build_inception1d(num_blocks=num_blocks,

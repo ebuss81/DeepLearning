@@ -29,16 +29,16 @@ class ModelEvaluation:
     def __init__(self, model = None):
         self.model = model
         self.model_d_input = 1
-        self.model_d_output = 3
+        self.model_d_output = 2
         self.device = "cpu"
 
     def load_model(self):
-        df_trials = pd.read_csv('optuna_results/study_trials.csv')
+        df_trials = pd.read_csv('optuna_results/2classes/CNN/study_trials.csv')
 
         best = df_trials.loc[df_trials['value'].idxmax()]
         logging.debug(best)
 
-        checkpoint_path = f'optuna_results/trial_{best["number"]}_best.pth'  # change to your desired file
+        checkpoint_path = f'optuna_results/2classes/CNN/trial_{best["number"]}_best.pth'  # change to your desired file
         state_dict = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
         model = build_cnn1d(self.model_d_input, self.model_d_output, best['params_d_model'], best['params_n_layers'], best['params_dropout'], 51)
         model.load_state_dict(state_dict['model'])
@@ -47,7 +47,7 @@ class ModelEvaluation:
     def get_dataloaders(self, batch_size = None):
         (train_set, val_set, test_set,
          d_input, d_output, class_weights) = load_my_dummy(
-            dev_path='Data_raw/Raw_TS_Classification_dev_1722_samples.pt',
+            dev_path='Data_raw/2classes/Raw_TS_Classification_dev_3446_samples.pt',
             test_path='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt',
             seed=42,
         )
