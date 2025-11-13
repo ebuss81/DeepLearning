@@ -24,6 +24,7 @@ from optuna.samplers import TPESampler
 from data.loaders import load_my_dummy
 from optuna_model_details import *
 from engine.loop import train_one_epoch, evaluate
+from engine.callbacks import EarlyStopping
 from engine.utils import (
     set_seed,
     create_dataloaders,
@@ -43,11 +44,12 @@ def get_args():
     parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt')
     parser.add_argument('--model', type=str, default='s4', choices=['CNN1D', 'Inception1D', 's4'])
     parser.add_argument('--metric', type=str, default='f1_macro', choices=["acc", "f1_macro"])
+    parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
 
     # HPO setup
     parser.add_argument("--n_trials", type=int, default=100,    # 30 before
                         help="Number of Optuna trials")
-    parser.add_argument("--max_epochs", type=int, default=100, #50 before
+    parser.add_argument("--max_epochs", type=int, default=1000, #50 before
                         help="Max epochs per trial")
     parser.add_argument("--prune_warmup", type=int, default=5,
                         help="Epochs before Optuna pruning kicks in")
@@ -116,6 +118,8 @@ def main():
                 optimizer = optim.AdamW(param_groups, lr=lr)
                 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
 
+            early_stopper = EarlyStopping(patience=args.patience, mode="max")
+
             best_val_metric = 0.0
 
             # ---- training loop for this trial ----
@@ -144,6 +148,14 @@ def main():
                 trial.report(val_metric, step=epoch)
                 if epoch >= args.prune_warmup and trial.should_prune():
                     raise optuna.TrialPruned()
+                # Early stopping on val_acc
+                if early_stopper.step(val_metric, epoch):
+                    print(
+                        f"Early stopping triggered at epoch {epoch}. "
+                        f"Best val acc: {early_stopper.best:.2f}%"
+                    )
+                    break
+
         except RuntimeError as e:
             if "max_pool1d" in str(e) and "output size: 0" in str(e):
                 raise optuna.TrialPruned()  # tells Optuna to discard this config
