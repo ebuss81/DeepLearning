@@ -45,9 +45,9 @@ def get_args():
     parser.add_argument('--metric', type=str, default='f1_macro', choices=["acc", "f1_macro"])
 
     # HPO setup
-    parser.add_argument("--n_trials", type=int, default=30,
+    parser.add_argument("--n_trials", type=int, default=100,    # 30 before
                         help="Number of Optuna trials")
-    parser.add_argument("--max_epochs", type=int, default=50,
+    parser.add_argument("--max_epochs", type=int, default=100, #50 before
                         help="Max epochs per trial")
     parser.add_argument("--prune_warmup", type=int, default=5,
                         help="Epochs before Optuna pruning kicks in")
