@@ -53,8 +53,8 @@ def get_args():
 
     # Dataset
     parser.add_argument('--dataset', type=str, default='my_dummy', choices=['my_dummy'])
-    parser.add_argument('--dev_path', type=str, default='/home/wp/Documents/GitHub/DataProcessing/BotanicalGardenTomato/Raw_TS_Classification/Raw_TS_Classification_dev_1722_samples.pt')
-    parser.add_argument('--test_path', type=str, default='/home/wp/Documents/GitHub/DataProcessing/BotanicalGardenTomato/Raw_TS_Classification/Raw_TS_Classification_test_574_samples.pt')
+    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2870_samples.pt')
+    parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt')
 
     # Dataloader
     parser.add_argument('--num_workers', type=int, default=2)
@@ -118,6 +118,7 @@ def main():
         n_layers=args.n_layers,
         dropout=args.dropout,
         kernel_size = args.kernel_size,
+        n_mlp = 10,
     ).to(device)
 
     best_metric = 0.0

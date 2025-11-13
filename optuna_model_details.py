@@ -16,6 +16,8 @@ def CNN_details(trial,device, d_input, d_output):
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 19, 29, 39, 49])
+    n_mlp = trial.suggest_int("n_mlp", 1, 6)
+
     # ---- model / loss / optimizer / sched ----
     model = build_cnn1d(
         d_input=d_input,
@@ -24,6 +26,7 @@ def CNN_details(trial,device, d_input, d_output):
         n_layers=n_layers,
         dropout=dropout,
         kernel_size=kernel_size,
+        n_mlp=n_mlp,
     ).to(device)
 
     return model, lr, weight_decay, label_smoothing, batch_size
