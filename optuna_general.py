@@ -39,7 +39,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="Optuna HPO for 1D-CNN")
 
     # Data
-    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_3446_samples.pt')
+    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2870_samples.pt')
     parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt')
     parser.add_argument('--model', type=str, default='s4', choices=['CNN1D', 'Inception1D', 's4'])
     parser.add_argument('--metric', type=str, default='f1_macro', choices=["acc", "f1_macro"])

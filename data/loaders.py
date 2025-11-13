@@ -46,7 +46,7 @@ def load_my_dummy(dev_path, test_path, seed=42, val_size=0.2):
 
     # Stratified split train/val from dev set
     idxs = np.arange(len(y_dev))
-    groups = pd.read_csv("Data_raw/2classes/Raw_TS_Classification_groups_3446_samples.csv") #note hard coded1
+    groups = pd.read_csv("Data_raw/2classes/Raw_TS_Classification_groups_2870_samples.csv") #note hard coded1
     groups = np.array(groups['plant_id'].values)
     # Combine class + group into a single stratification label
     strat_labels = np.array(list(zip(y_dev.numpy(), groups)))
