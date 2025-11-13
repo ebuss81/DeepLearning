@@ -102,7 +102,7 @@ def main():
             trainloader, valloader, testloader = create_dataloaders(
                 train_set, val_set, test_set,
                 batch_size=batch_size,
-                num_workers=2,
+                num_workers=6,
                 device=device,
             )
 
