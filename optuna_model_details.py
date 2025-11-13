@@ -8,7 +8,6 @@ import torch.optim as optim
 
 
 def CNN_details(trial,device, d_input, d_output):
-
     lr = trial.suggest_float("lr", 1e-4, 1e-1, log=True) # logarithmic scale
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1, log=True) # logarithmic scale?
     d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
@@ -16,8 +15,7 @@ def CNN_details(trial,device, d_input, d_output):
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
-    # note kernel size
-
+    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 19, 29, 39, 49])
     # ---- model / loss / optimizer / sched ----
     model = build_cnn1d(
         d_input=d_input,
@@ -25,7 +23,7 @@ def CNN_details(trial,device, d_input, d_output):
         d_model=d_model,
         n_layers=n_layers,
         dropout=dropout,
-        kernel_size=51,  # Note: also variable maybe?
+        kernel_size=kernel_size,
     ).to(device)
 
     return model, lr, weight_decay, label_smoothing, batch_size
