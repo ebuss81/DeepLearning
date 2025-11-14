@@ -62,7 +62,7 @@ def get_args():
 
     # Model
     parser.add_argument('--n_layers', type=int, default=4, help='Number of conv blocks')
-    parser.add_argument('--d_model', type=int, default=256, help='Channels in conv blocks')
+    parser.add_argument('--d_model', type=int, default=6, help='Channels in conv blocks')
     parser.add_argument('--dropout', type=float, default=0.05)
     parser.add_argument('--label_smoothing', type=float, default=0.1)
     parser.add_argument('--kernel_size', type=int, default=51, help='Conv kernel size')
@@ -114,7 +114,7 @@ def main():
     model = build_cnn1d(
         d_input=d_input,
         d_output=d_output,
-        d_model=args.d_model,
+        start_dim=args.d_model,
         n_layers=args.n_layers,
         dropout=args.dropout,
         kernel_size = args.kernel_size,

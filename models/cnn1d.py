@@ -9,7 +9,7 @@ class CNN1D(nn.Module):
     Input: (B, L, d_input) – internally transposed to (B, C, L) for Conv1d.
     """
 
-    def __init__(self, d_input=1, d_output=3, d_model=32, n_layers=2, dropout=0.0, kernel_size = 5, n_mlp=2):
+    def __init__(self, d_input=1, d_output=3, start_dim=32, n_layers=2, dropout=0.0, kernel_size = 5, n_mlp=2):
         super().__init__()
 
         layers = []
@@ -25,10 +25,13 @@ class CNN1D(nn.Module):
 
             #print(k)
             # Conv block: Conv -> BN -> ReLU
+            d_model = 2 ** (i + start_dim)
+            print(d_model)
             layers += [
-                nn.Conv1d(in_ch, d_model, kernel_size=kernel_size, padding=kernel_size // 2),
+                nn.Conv1d(in_ch, d_model, kernel_size=k, padding=kernel_size // 2),
                 nn.BatchNorm1d(d_model),
                 nn.ReLU(inplace=True),
+
             ]
 
             # Optional dropout
@@ -37,7 +40,7 @@ class CNN1D(nn.Module):
 
             # Downsample every second block
             if i % 2 == 1:
-                layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
+                layers.append(nn.MaxPool1d(kernel_size=2, stride=2)) # other pooling parameteers?
 
             in_ch = d_model
 
@@ -48,10 +51,10 @@ class CNN1D(nn.Module):
 
         mlp_layers.append(nn.AdaptiveAvgPool1d(1))
         mlp_layers.append(nn.Flatten())
-        print("hi", n_mlp)
+        #print("hi", n_mlp)
 
         for h in range(n_mlp-1):
-            print(in_dim)
+            #print(in_dim)
             out_dim = max(in_dim // 2, d_output)
             mlp_layers.append(nn.Linear(in_dim, out_dim))
             mlp_layers.append(nn.ReLU(inplace=True))
@@ -79,11 +82,11 @@ class CNN1D(nn.Module):
         return x
 
 
-def build_cnn1d(d_input, d_output, d_model, n_layers, dropout, kernel_size, n_mlp=2):
+def build_cnn1d(d_input, d_output, start_dim, n_layers, dropout, kernel_size, n_mlp=2):
     return CNN1D(
         d_input=d_input,
         d_output=d_output,
-        d_model=d_model,
+        start_dim=start_dim,
         n_layers=n_layers,
         dropout=dropout,
         kernel_size=kernel_size,

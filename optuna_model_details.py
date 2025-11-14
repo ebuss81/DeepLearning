@@ -10,19 +10,19 @@ import torch.optim as optim
 def CNN_details(trial,device, d_input, d_output):
     lr = trial.suggest_float("lr", 1e-4, 1e-1, log=True) # logarithmic scale
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1, log=True) # logarithmic scale?
-    d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
+    start_dim = trial.suggest_int("start_model_dim", 5,10)
     n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
-    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 19, 29, 39, 49])
+    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65, 129])
     n_mlp = trial.suggest_int("n_mlp", 1, 6)
 
     # ---- model / loss / optimizer / sched ----
     model = build_cnn1d(
         d_input=d_input,
         d_output=d_output,
-        d_model=d_model,
+        start_dim=start_dim,
         n_layers=n_layers,
         dropout=dropout,
         kernel_size=kernel_size,
@@ -42,7 +42,7 @@ def Inception_details(trial,device, d_input, d_output):
     num_blocks = trial.suggest_int("num_blocks", 2, 6)
     out_channels = trial.suggest_categorical("out_channels", [8, 16, 32, 64])
     bottleneck_channels = trial.suggest_categorical("bottleneck_channels", [2, 4, 8, 16, 32, 64])
-    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 19, 29, 39, 49])
+    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65, 129])
 
     # ---- model / loss / optimizer / sched ----
     model = build_inception1d(num_blocks=num_blocks,
