@@ -26,6 +26,7 @@ class CNN1D(nn.Module):
             #print(k)
             # Conv block: Conv -> BN -> ReLU
             d_model = 2 ** (i + start_dim)
+            d_model = min(d_model, 1024)  # cap model size to 512 channels
             print(d_model)
             layers += [
                 nn.Conv1d(in_ch, d_model, kernel_size=k, padding=kernel_size // 2),

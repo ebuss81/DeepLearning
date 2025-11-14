@@ -10,7 +10,7 @@ import torch.optim as optim
 def CNN_details(trial,device, d_input, d_output):
     lr = trial.suggest_float("lr", 1e-4, 1e-1, log=True) # logarithmic scale
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1, log=True) # logarithmic scale?
-    start_dim = trial.suggest_int("start_model_dim", 5,10)
+    start_dim = trial.suggest_int("start_model_dim", 1,10)
     n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
