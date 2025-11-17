@@ -36,12 +36,14 @@ class InceptionModel(pl.LightningModule):
     def __init__(self, num_blocks: int, in_channels: int, out_channels: Union[List[int], int],
                  bottleneck_channels: Union[List[int], int], kernel_sizes: Union[List[int], int],
                  use_residuals: Union[List[bool], bool, str] = 'default',
-                 num_pred_classes: int = 1, accelerator="cuda", groups=1, lr =0.01) -> None:
+                 num_pred_classes: int = 1, accelerator="cuda", groups=1, lr =0.01, num_branches = None, num_modules = None) -> None:
         super().__init__()
 
         # for easier saving and loading
         self.input_args = {
-            'num_blocks': num_blocks,
+            'num_blocks': num_blocks,                   # residual blocks
+            'num_branches': num_branches,               # parallel filter
+            'num_modules ': num_modules,                # sequential Inception modules per block
             'in_channels': in_channels,
             'out_channels': out_channels,
             'bottleneck_channels': bottleneck_channels,
@@ -77,9 +79,9 @@ class InceptionModel(pl.LightningModule):
             kernel_size = max(5, int(round(kernel_sizes * (0.8 ** i))))
             kernel_size = kernel_size + 1 if kernel_size % 2 == 0 else kernel_size
             #print(in_channel_block, out_channel_block, kernel_size)
-            block = InceptionBlock(in_channels=in_channel_block, out_channels=out_channel_block,
+            block = ResidualBlock(in_channels=in_channel_block, out_channels=out_channel_block,
                         residual=use_residuals[i], bottleneck_channels=bottleneck_channels[i],
-                        kernel_size=kernel_size, bit=32, layer=num_blocks, accelerator=self.accelerator,
+                        kernel_size=kernel_size, bit=32, num_branches=num_branches, accelerator=self.accelerator,
                                      groups=groups)
 
             self.blocks.add_module(f'InceptionBlock_{i+1}', block)
@@ -147,13 +149,15 @@ class InceptionModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        _, y_hat = self(x)
+        #_, y_hat = self(x) # note new
+        y_hat = self(x)
         loss = self.loss_fn(y_hat, y)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        _, y_hat = self(x)
+        #_, y_hat = self(x) # note new
+        y_hat = self(x)
         loss = self.loss_fn(y_hat, y)
         acc = (y_hat.argmax(dim=1) == y.argmax(dim=1)).float().mean()
         self.log("val_loss", loss, prog_bar=True)
@@ -162,7 +166,8 @@ class InceptionModel(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        _, y_hat = self(x)
+        #_, y_hat = self(x) # note new
+        y_hat = self(x)
         loss = self.loss_fn(y_hat, y)
         y_hat = torch.softmax(y_hat, dim=-1)
         acc = (y_hat.argmax(dim=1) == y.argmax(dim=1)).float().mean()
@@ -196,28 +201,22 @@ class InceptionModel(pl.LightningModule):
         self.test_outputs.clear()
 
 
-class InceptionBlock(nn.Module):
+class ResidualBlock(nn.Module):
     """An inception block consists of an (optional) bottleneck, followed
-    by 3 conv1d layers. Optionally residual
+    by 3 conv1d layers. Optionally residual note probably wrong
     """
 
     def __init__(self, in_channels: int, out_channels: int,
                  residual: bool, stride: int = 1, bottleneck_channels: int = 32,
-                 kernel_size: int = 41, bit=None, layer=3, accelerator="cuda", groups=1) -> None:
+                 kernel_size: int = 41, bit=None, num_branches=3, accelerator="cuda", groups=1, num_modules: int = 3,) -> None:
         assert kernel_size > 3, "Kernel size must be strictly greater than 3"
         super().__init__()
 
         self.accelerator = accelerator
-        self.use_bottleneck = bottleneck_channels > 0
-        if self.use_bottleneck:
-            self.bottleneck = Conv1dSamePadding(in_channels, bottleneck_channels,
-                                                kernel_size=1, bias=False, bit=bit, accelerator=self.accelerator,
-                                                groups=groups)
-            # self.bottleneck = nn.Conv1d(in_channels=in_channels, out_channels=bottleneck_channels, kernel_size=1, bias=False, padding='same')
-
-        kernel_size_s = [kernel_size // (2 ** i) for i in range(layer)] # Note check with cnn implementationt
-        start_channels = bottleneck_channels if self.use_bottleneck else in_channels
-        channels = [start_channels] + [out_channels] * layer
+        self.use_residual = residual
+        # note new
+        """
+        channels = [start_channels] + [out_channels] * layer                   # note new
         self.conv_layers = nn.Sequential(*[
             Conv1dSamePadding(in_channels=channels[i], out_channels=channels[i + 1],
                               kernel_size=kernel_size_s[i], stride=stride, bias=False, bit=bit,
@@ -230,8 +229,25 @@ class InceptionBlock(nn.Module):
         # TODO not needed
         self.batchnorm = nn.BatchNorm1d(num_features=channels[-1])
         self.relu = nn.ReLU()
+        """
 
-        self.use_residual = residual
+        modules = []
+        for m in range(num_modules):
+            mod_in_ch = in_channels if m == 0 else out_channels
+            modules.append(
+                InceptionModule(
+                    in_channels=mod_in_ch,
+                    out_channels=out_channels,
+                    bottleneck_channels=bottleneck_channels,
+                    kernel_size=kernel_size,
+                    num_branches=num_branches,
+                    bit=bit,
+                    accelerator=self.accelerator,
+                    groups=groups
+                )
+            )
+        self.modules_seq = nn.Sequential(*modules)
+
         if residual:
             self.residual = nn.Sequential(*[
                 Conv1dSamePadding(in_channels=in_channels, out_channels=out_channels,
@@ -243,15 +259,104 @@ class InceptionBlock(nn.Module):
                 nn.ReLU().to(self.accelerator)
             ])
 
+        self.final_relu = nn.ReLU()
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore
         org_x = x
-        if self.use_bottleneck:
-            x = self.bottleneck(x)
-        x = self.conv_layers(x).to(self.accelerator)
+        x = self.modules_seq(x)  # pass through N InceptionModules
 
         if self.use_residual:
             x = x + self.residual(org_x)
+
+        x = self.final_relu(x)
         return x
+
+class InceptionModule(nn.Module):
+    def __init__(self, in_channels, out_channels,
+                 bottleneck_channels=32, kernel_size=41,
+                 num_branches=3, bit=None, accelerator="cuda", groups=1):
+        super().__init__()
+        self.accelerator = accelerator
+        self.use_bottleneck = bottleneck_channels > 0
+
+        if self.use_bottleneck:
+            self.bottleneck = Conv1dSamePadding(
+                in_channels, bottleneck_channels,
+                kernel_size=1, bias=False, bit=bit,
+                accelerator=self.accelerator, groups=groups
+            )
+        start_channels = bottleneck_channels if self.use_bottleneck else in_channels
+
+        # multi-kernel sizes (k, k/2, k/4, ...)
+        kernel_size_s = [max(5, kernel_size // (2 ** i)) for i in range(num_branches)]
+        kernel_size_s = [ks if ks % 2 == 1 else ks - 1 for ks in kernel_size_s]
+
+        # conv branches
+        self.branches = nn.ModuleList([
+            Conv1dSamePadding(
+                in_channels=start_channels,
+                out_channels=out_channels,
+                kernel_size=kernel_size_s[i],
+                stride=1,
+                bias=False,
+                bit=bit,
+                accelerator=self.accelerator,
+                groups=groups
+            )
+            for i in range(num_branches)
+        ])
+
+        # pool + 1x1 branch
+        self.pool = nn.MaxPool1d(kernel_size=3, stride=1, padding=1)
+        self.pool_conv = Conv1dSamePadding(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=1,
+            bias=False,
+            bit=bit,
+            accelerator=self.accelerator,
+            groups=groups
+        )
+
+        total_branches = num_branches + 1
+
+        self.concat_bn = nn.BatchNorm1d(out_channels * total_branches)
+        self.concat_relu = nn.ReLU()
+
+        # optional projection back to out_channels (this part is your “extra” not in paper)
+        self.proj = Conv1dSamePadding(
+            in_channels=out_channels * total_branches,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=1,
+            bias=False,
+            bit=bit,
+            accelerator=self.accelerator,
+            groups=groups
+        )
+        self.bn = nn.BatchNorm1d(out_channels)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        org_x = x
+        if self.use_bottleneck:
+            x = self.bottleneck(x)
+
+        conv_outputs = [branch(x) for branch in self.branches]
+        p = self.pool(org_x)
+        p = self.pool_conv(p)
+
+        x = torch.cat(conv_outputs + [p], dim=1)
+        x = self.concat_bn(x)
+        x = self.concat_relu(x)
+
+        x = self.proj(x)
+        x = self.bn(x)
+        x = self.relu(x)
+
+        return x  # shape: (B, out_channels, L)
+
 
 
 class Conv1dSamePadding(nn.Conv1d):
@@ -308,8 +413,10 @@ class Conv1dSamePadding(nn.Conv1d):
 #     # stride and dilation are expected to be tuples.
 #
 
-def build_inception1d(n_classes = 2, num_blocks=3, d_input = 1, out_channels =10 , bottleneck_channels = 32, kernel_sizes= 41, lr = 0.01) -> InceptionModel:
+def build_inception1d(n_classes = 2, num_blocks=3, d_input = 1, out_channels =10 , bottleneck_channels = 32, kernel_sizes= 41, lr = 0.01, num_branches = None, num_modules = None) -> InceptionModel:
     return InceptionModel(num_blocks = num_blocks,
+                          num_modules = num_modules,
+                          num_branches = num_branches,
                           in_channels = d_input,
                           out_channels = out_channels, #[10 ,20 ,40], that was default
                           bottleneck_channels = bottleneck_channels,

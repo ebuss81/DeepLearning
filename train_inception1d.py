@@ -51,9 +51,8 @@ def get_args():
 
     # Dataset
     parser.add_argument('--dataset', type=str, default='my_dummy', choices=['my_dummy'])
-    parser.add_argument('--dev_path', type=str, default='/home/wp/Documents/GitHub/DataProcessing/BotanicalGardenTomato/Raw_TS_Classification/Raw_TS_Classification_dev_3446_samples.pt')
-    parser.add_argument('--test_path', type=str, default='/home/wp/Documents/GitHub/DataProcessing/BotanicalGardenTomato/Raw_TS_Classification/Raw_TS_Classification_test_574_samples.pt')
-
+    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2870_samples.pt')
+    parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt')
     # Dataloader
     parser.add_argument('--num_workers', type=int, default=2)
     parser.add_argument('--batch_size', type=int, default=64)
@@ -113,6 +112,8 @@ def main():
     # ---------------------------
     print('==> Building model..')
     model = build_inception1d(num_blocks= 3,
+                              num_modules = 3,
+                              num_branches=3,
                               d_input=d_input,
                               out_channels= args.out_channels,
                               bottleneck_channels= args.bottleneck_channels,
