@@ -62,7 +62,7 @@ def get_args():
 
     # Model
     parser.add_argument('--n_layers', type=int, default=4, help='Number of conv blocks')
-    parser.add_argument('--d_model', type=int, default=6, help='Channels in conv blocks')
+    parser.add_argument('--d_model', type=int, default=8, help='Channels in conv blocks')
     parser.add_argument('--dropout', type=float, default=0.05)
     parser.add_argument('--label_smoothing', type=float, default=0.1)
     parser.add_argument('--kernel_size', type=int, default=51, help='Conv kernel size')

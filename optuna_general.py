@@ -42,7 +42,7 @@ def get_args():
     # Data
     parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2870_samples.pt')
     parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt')
-    parser.add_argument('--model', type=str, default='CNN1D', choices=['CNN1D', 'Inception1D', 's4'])
+    parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4'])
     parser.add_argument('--metric', type=str, default='acc', choices=["acc", "f1_macro"])
     parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
 
