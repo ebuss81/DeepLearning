@@ -9,7 +9,7 @@ class CNN1D(nn.Module):
     Input: (B, L, d_input) – internally transposed to (B, C, L) for Conv1d.
     """
 
-    def __init__(self, d_input=1, d_output=3, start_dim=32, n_layers=2, dropout=0.0, kernel_size = 5, n_mlp=2):
+    def __init__(self, d_input=1, d_output=3, start_dim=5, n_layers=2, dropout=0.0, kernel_size = 5, n_mlp=2):
         super().__init__()
 
         layers = []
@@ -26,10 +26,10 @@ class CNN1D(nn.Module):
             #print(k)
             # Conv block: Conv -> BN -> ReLU
             d_model = 2 ** (i + start_dim)
-            d_model = min(d_model, 1024)  # cap model size to 512 channels
+            d_model = min(d_model, 512)  # cap model size to 512 channels
             print(d_model)
             layers += [
-                nn.Conv1d(in_ch, d_model, kernel_size=k, padding=kernel_size // 2),
+                nn.Conv1d(in_ch, d_model, kernel_size=k, padding=k // 2),
                 nn.BatchNorm1d(d_model),
                 nn.ReLU(inplace=True),
 
