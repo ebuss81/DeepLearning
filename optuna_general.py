@@ -170,6 +170,9 @@ def main():
             if "Output size is too small" in str(e):
                 print(f"[Trial {trial.number}] Output size is too small -> pruned")
                 raise optuna.TrialPruned()
+            for k, v in trial.params.items():
+                print(f"    {k}: {v}")
+
             else:
                 raise
 
