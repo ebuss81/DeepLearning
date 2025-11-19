@@ -157,6 +157,8 @@ def main():
                     break
 
         except RuntimeError as e:
+            for k, v in trial.params.items():
+                print(f"    {k}: {v}")
             if "max_pool1d" in str(e) and "output size: 0" in str(e):
                 raise optuna.TrialPruned()  # tells Optuna to discard this config
             if "CUDA out of memory" in str(e) or "CUDNN_STATUS_ALLOC_FAILED" in str(e):
