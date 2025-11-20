@@ -8,7 +8,7 @@ import torch.backends.cudnn as cudnn
 
 from tqdm.auto import tqdm
 
-from DeepLearning.models.my_s4 import build_s4
+from models.my_s4 import build_s4
 from data.loaders import load_my_dummy
 from models.cnn1d import build_cnn1d
 from engine.loop import train_one_epoch, evaluate
