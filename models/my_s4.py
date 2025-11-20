@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-
-
+from mamba_ssm import Mamba
 import sys
 #sys.path.insert(0, '/home/wp/Documents/GitHub/DataProcessing/DeepLearning/s4/models')
 #from DeepLearning.models.s4.models.s4.s4d import S4D
@@ -22,7 +21,7 @@ class S4Model(nn.Module):
         self,
         d_input,
         d_output=10,
-        d_model=256,
+        d_model=256,    # internal hinnde size?
         n_layers=4,
         dropout=0.2,
         lr = None,
@@ -36,6 +35,7 @@ class S4Model(nn.Module):
         self.encoder = nn.Linear(d_input, d_model)
 
         # Stack S4 layers as residual blocks
+        """
         self.s4_layers = nn.ModuleList()
         self.norms = nn.ModuleList()
         self.dropouts = nn.ModuleList()
@@ -45,6 +45,16 @@ class S4Model(nn.Module):
             )
             self.norms.append(nn.LayerNorm(d_model))
             self.dropouts.append(dropout_fn(dropout))
+        """
+        # 2) Mamba block (sequence model)
+        self.mamba = Mamba(
+            d_model=d_model,
+            d_state=16,
+            d_conv=4,
+            expand=2,
+        )
+        # Optional dropout after Mamba
+        self.dropout = nn.Dropout(dropout)
 
         # Linear decoder
         self.decoder = nn.Linear(d_model, d_output)
@@ -55,7 +65,9 @@ class S4Model(nn.Module):
         """
         x = self.encoder(x)  # (B, L, d_input) -> (B, L, d_model)
 
-        x = x.transpose(-1, -2)  # (B, L, d_model) -> (B, d_model, L)
+        #x = x.transpose(-1, -2)  # (B, L, d_model) -> (B, d_model, L)
+
+        """
         for layer, norm, dropout in zip(self.s4_layers, self.norms, self.dropouts):
             # Each iteration of this loop will map (B, d_model, L) -> (B, d_model, L)
 
@@ -76,8 +88,12 @@ class S4Model(nn.Module):
             if not self.prenorm:
                 # Postnorm
                 x = norm(x.transpose(-1, -2)).transpose(-1, -2)
+                
+        """
+        x = self.mamba(x)
+        x = self.dropout(x)
 
-        x = x.transpose(-1, -2)
+        #x = x.transpose(-1, -2)
 
         # Pooling: average pooling over the sequence length
         x = x.mean(dim=1)
