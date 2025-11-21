@@ -48,10 +48,10 @@ class S4Model(nn.Module):
         """
         # 2) Mamba block (sequence model)
         self.mamba = Mamba(
-            d_model=d_model,
-            d_state=16,
-            d_conv=4,
-            expand=2,
+            d_model=64,    # num model channels
+            d_state=16,         # hidden state size, control how much memory the model has
+            d_conv=4,           # conv channels
+            expand=2,           # expansion factor
         )
         # Optional dropout after Mamba
         self.dropout = nn.Dropout(dropout)
