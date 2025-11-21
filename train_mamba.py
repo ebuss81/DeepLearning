@@ -195,7 +195,7 @@ def main():
 
     for epoch in range(start_epoch, args.epochs):
         current_lr = optimizer.param_groups[0]["lr"]
-        tqdm.write(f"Epoch {epoch} | lr={current_lr:.3e} | best val acc={best_val_acc:.2f}% (# {early_stopper.num_bad_epochs} epochs) | train acc {history[-1]['train_acc'] if epoch>0 else 0:.2f}% | test acc {history[-1]['test_acc'] if epoch>0 else 0:.2f}%")
+        tqdm.write(f"Epoch {epoch} | lr={current_lr:.3e} | best val acc={best_val_acc:.2f}% (# {early_stopper.num_bad_epochs} epochs) | val acc {history[-1]['val_acc'] if epoch>0 else 0:.2f}% | train acc {history[-1]['train_acc'] if epoch>0 else 0:.2f}% | test acc {history[-1]['test_acc'] if epoch>0 else 0:.2f}%")
 
         train_metrics = train_one_epoch(
             model, trainloader, optimizer, criterion, device
