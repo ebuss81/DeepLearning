@@ -53,6 +53,7 @@ def get_args():
     parser.add_argument('--label_smoothing', type=float, default=0.1)
     parser.add_argument('--d_state', type=int, default=16, help='Channels in conv blocks')
     parser.add_argument('--d_conv', type=int, default=4, help='Channels in conv blocks')
+    parser.add_argument('--expand', type=int, default=2, help='Channels in conv blocks')
     #parser.add_argument('--kernel_size', type=int, default=15, help='Conv kernel size')
 
     # General
