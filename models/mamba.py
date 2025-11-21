@@ -74,6 +74,7 @@ def build_mamba(
     d_conv=4,
     expand=2,
     dropout=0.3,
+    prenorm=True,
 ):
     return MambaModel(
         d_input=d_input,
@@ -85,5 +86,5 @@ def build_mamba(
         expand=expand,
         dropout=dropout,
         lr=lr,
-        prenorm=True,
+        prenorm=prenorm,
     )
