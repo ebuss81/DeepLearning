@@ -185,13 +185,13 @@ def main():
 
     # Exclude biases & norm layers from weight decay
     param_groups = make_param_groups(model, weight_decay=args.weight_decay) # note sure if needed for S4
-    #optimizer = optim.AdamW(param_groups, lr=args.lr)
-    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-    #    optimizer, T_max=args.epochs
-    #)
-    optimizer, scheduler = setup_optimizer(
-        model, lr=args.lr, weight_decay=args.weight_decay, epochs=args.epochs
+    optimizer = optim.AdamW(param_groups, lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=args.epochs
     )
+    #optimizer, scheduler = setup_optimizer(
+    #    model, lr=args.lr, weight_decay=args.weight_decay, epochs=args.epochs
+    #)
 
     # ---------------------------
     # Training loop
