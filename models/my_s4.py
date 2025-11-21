@@ -32,7 +32,7 @@ class S4Model(nn.Module):
         self.prenorm = prenorm
 
         # Linear encoder (d_input = 1 for grayscale and 3 for RGB)
-        self.encoder = nn.Linear(d_input, d_model)
+        self.encoder = nn.Linear(d_input, 64)
 
         # Stack S4 layers as residual blocks
         """
@@ -48,7 +48,7 @@ class S4Model(nn.Module):
         """
         # 2) Mamba block (sequence model)
         self.mamba = Mamba(
-            d_model=d_model,
+            d_model=64,
             d_state=16,
             d_conv=4,
             expand=2,
@@ -57,7 +57,7 @@ class S4Model(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
         # Linear decoder
-        self.decoder = nn.Linear(d_model, d_output)
+        self.decoder = nn.Linear(64, d_output)
 
     def forward(self, x):
         """

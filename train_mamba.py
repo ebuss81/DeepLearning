@@ -34,7 +34,7 @@ def get_args():
 
     # Scheduler / training
     parser.add_argument('--epochs', type=int, default=200, help='Training epochs')
-    parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
+    parser.add_argument('--patience', type=int, default=200, help='Early stopping patience')
 
     # Dataset
     parser.add_argument('--dataset', type=str, default='my_dummy', choices=['my_dummy'])
