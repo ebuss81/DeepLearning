@@ -8,7 +8,7 @@ import torch.backends.cudnn as cudnn
 
 from tqdm.auto import tqdm
 
-from models.my_s4 import build_s4
+from models.mamba import build_mamba
 from data.loaders import load_my_dummy
 from models.cnn1d import build_cnn1d
 from engine.loop import train_one_epoch, evaluate
@@ -46,11 +46,13 @@ def get_args():
     parser.add_argument('--batch_size', type=int, default=64)
 
     # Model
-    parser.add_argument('--n_layers', type=int, default=8, help='Number of conv blocks')
-    parser.add_argument('--d_model', type=int, default=256, help='Channels in conv blocks')
+    parser.add_argument('--n_layers', type=int, default=2, help='Number of conv blocks')
+    parser.add_argument('--d_model', type=int, default=128, help='Channels in conv blocks')
     parser.add_argument('--dropout', type=float, default=0.2)
     parser.add_argument('--prenorm', action='store_true', help='Prenorm')
     parser.add_argument('--label_smoothing', type=float, default=0.1)
+    parser.add_argument('--d_state', type=int, default=16, help='Channels in conv blocks')
+    parser.add_argument('--d_conv', type=int, default=4, help='Channels in conv blocks')
     #parser.add_argument('--kernel_size', type=int, default=15, help='Conv kernel size')
 
     # General
@@ -96,12 +98,17 @@ def main():
     # ---------------------------
     # Model
     # ---------------------------
+
+
     print('==> Building model..')
-    model = build_s4(
+    model = build_mamba(
         d_input=d_input,
         d_output=d_output,
         d_model=args.d_model,
         n_layers=args.n_layers,
+        d_state=args.d_state,
+        d_conv=args.d_conv,
+        expand=args.expand,
         dropout=args.dropout,
         prenorm=args.prenorm,
         lr = args.lr
@@ -178,13 +185,13 @@ def main():
 
     # Exclude biases & norm layers from weight decay
     param_groups = make_param_groups(model, weight_decay=args.weight_decay) # note sure if needed for S4
-    #optimizer = optim.AdamW(param_groups, lr=args.lr)
-    #scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-    #    optimizer, T_max=args.epochs
-    #)
-    optimizer, scheduler = setup_optimizer(
-        model, lr=args.lr, weight_decay=args.weight_decay, epochs=args.epochs
+    optimizer = optim.AdamW(param_groups, lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=args.epochs
     )
+    #optimizer, scheduler = setup_optimizer(
+    #    model, lr=args.lr, weight_decay=args.weight_decay, epochs=args.epochs
+    #)
 
     # ---------------------------
     # Training loop
