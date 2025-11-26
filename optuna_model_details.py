@@ -3,6 +3,7 @@
 from models.cnn1d import build_cnn1d
 from models.inception1d import build_inception1d
 from models.my_s4 import build_s4
+from models.mamba import build_mamba
 import torch
 import torch.optim as optim
 
@@ -127,3 +128,34 @@ def s4_optimizer(model, lr, weight_decay, epochs):
                          ] + [f"{k} {v}" for k, v in group_hps.items()]))
 
     return optimizer, scheduler
+
+
+
+def mamba_details(trial,device, d_input, d_output):
+    lr = trial.suggest_float("lr", 1e-4, 1e-1)
+    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
+    label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
+    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
+    d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
+    d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64])
+    d_conv = trial.suggest_categorical("d_conv", [2, 4, 8, 16])
+    expand = trial.suggest_int("expand", 1,5,step=1)
+    n_layers = trial.suggest_int("n_layers", 1, 8, step=1)
+    dropout = trial.suggest_float("dropout", 0.0, 0.5)
+
+
+    # ---- model / loss / optimizer / sched ----
+    model = build_mamba(
+        d_input=d_input,
+        d_output=d_output,
+        d_model=d_model,
+        n_layers=n_layers,
+        d_state=d_state,
+        d_conv=d_conv,
+        expand=expand,
+        dropout=dropout,
+        prenorm="store_true",
+        lr = lr
+    ).to(device)
+
+    return model, lr, weight_decay, label_smoothing, batch_size

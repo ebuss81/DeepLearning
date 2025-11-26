@@ -42,7 +42,7 @@ def get_args():
     # Data
     parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2870_samples.pt')
     parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt')
-    parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4'])
+    parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4', 'mamba'])
     parser.add_argument('--metric', type=str, default='acc', choices=["acc", "f1_macro"])
     parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
 
@@ -93,6 +93,8 @@ def main():
                 model, lr, weight_decay, label_smoothing, batch_size = Inception_details(trial, device, d_input, d_output)
             elif args.model == "s4":
                 model, lr, weight_decay, label_smoothing, batch_size = s4_details(trial, device, d_input, d_output)
+            elif args.model == "mamba":
+                model, lr, weight_decay, label_smoothing, batch_size = mamba_details(trial, device, d_input, d_output)
             else:
                 raise ValueError(f"Unknown model: {args.model}")
 
