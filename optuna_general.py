@@ -132,7 +132,7 @@ def main():
                 val_metrics = evaluate(model, valloader, criterion, device, split_name="val")
                 scheduler.step()
 
-                val_metric = val_metrics["f1_macro"]
+                val_metric = val_metrics[args.metric]
                 if val_metric > best_val_metric:
                     best_val_metric = val_metric
                     # Save a checkpoint for this trial’s best model
@@ -154,7 +154,7 @@ def main():
                 if early_stopper.step(val_metric, epoch):
                     print(
                         f"Early stopping triggered at epoch {epoch}. "
-                        f"Best val acc: {early_stopper.best:.2f}%"
+                        f"Best val: {early_stopper.best:.2f}%"
                     )
                     break
 
@@ -174,9 +174,6 @@ def main():
             if "Output size is too small" in str(e):
                 print(f"[Trial {trial.number}] Output size is too small -> pruned")
                 raise optuna.TrialPruned()
-            for k, v in trial.params.items():
-                print(f"    {k}: {v}")
-
             else:
                 raise
 
