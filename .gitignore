@@ -110,7 +110,7 @@ logs/
 output/
 results/
 checkpoints/
-
+Data_raw
 # If using Docker
 *.pid
 *.tar
