@@ -137,7 +137,7 @@ def mamba_details(trial,device, d_input, d_output):
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
-    d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64])
+    d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64, 128, 256])
     d_conv = trial.suggest_categorical("d_conv", [2, 4, 8, 16])
     expand = trial.suggest_int("expand", 1,5,step=1)
     n_layers = trial.suggest_int("n_layers", 1, 8, step=1)
@@ -150,9 +150,9 @@ def mamba_details(trial,device, d_input, d_output):
         d_output=d_output,
         d_model=d_model,
         n_layers=n_layers,
-        d_state=d_state,
-        d_conv=d_conv,
-        expand=expand,
+        d_state=d_state, # size of x_t, latent state - better longer term memory with higher d_state
+        d_conv=d_conv, # 1d convolution before SSM - better local features with higher d_conv
+        expand=expand,# expansion factor of d_model, increases expessivity per layer
         dropout=dropout,
         prenorm="store_true",
         lr = lr
