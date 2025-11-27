@@ -1,8 +1,9 @@
 #!/bin/bash
 
 ARGS_LIST=(
+  "--model mamba --metric acc" 
   "--model CNN1D --metric acc"
-  "--model s4  --metric acc"
+#  "--model s4  --metric acc"
   "--model Inception1D --metric acc"
 )
 

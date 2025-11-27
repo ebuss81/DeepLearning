@@ -11,11 +11,11 @@ import torch.optim as optim
 def CNN_details(trial,device, d_input, d_output):
     lr = trial.suggest_float("lr", 1e-4, 1e-1, log=True) # logarithmic scale
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1, log=True) # logarithmic scale?
-    start_dim = trial.suggest_int("start_model_dim", 1, 9)
+    start_dim = trial.suggest_int("start_model_dim", 1, 16)
     n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
-    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
+    batch_size = trial.suggest_categorical("batch_size", [4,8,16, 32, 64, 128])
     kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65, 129])
     n_mlp = trial.suggest_int("n_mlp", 1, 6)
 
@@ -39,11 +39,11 @@ def Inception_details(trial,device, d_input, d_output):
     # n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
     # dropout = trial.suggest_float("dropout", 0.0, 0.5)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
-    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
+    batch_size = trial.suggest_categorical("batch_size", [4,8,16, 32, 64, 128])
     num_blocks = trial.suggest_int("num_blocks", 1, 4)
     num_modules = trial.suggest_int("num_modules", 1, 4)
     num_branches = trial.suggest_int("num_branches", 1, 4)
-    out_channels = trial.suggest_categorical("out_channels", [8, 16, 32, 64])
+    out_channels = trial.suggest_categorical("out_channels", [8, 16, 32, 64, 128, 256])
     bottleneck_channels = trial.suggest_categorical("bottleneck_channels", [2, 4, 8, 16, 32, 64])
     kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65, 129])
 
@@ -135,10 +135,10 @@ def mamba_details(trial,device, d_input, d_output):
     lr = trial.suggest_float("lr", 1e-4, 1e-1)
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
-    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
+    batch_size = trial.suggest_categorical("batch_size", [4,8,16, 32, 64, 128])
     d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
-    d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64, 128, 256])
-    d_conv = trial.suggest_categorical("d_conv", [2, 4, 8, 16])
+    d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64])
+    d_conv = trial.suggest_categorical("d_conv", [2, 4, 8, 5,9,17,33,65,129])
     expand = trial.suggest_int("expand", 1,5,step=1)
     n_layers = trial.suggest_int("n_layers", 1, 8, step=1)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
@@ -150,9 +150,9 @@ def mamba_details(trial,device, d_input, d_output):
         d_output=d_output,
         d_model=d_model,
         n_layers=n_layers,
-        d_state=d_state, # size of x_t, latent state - better longer term memory with higher d_state
-        d_conv=d_conv, # 1d convolution before SSM - better local features with higher d_conv
-        expand=expand,# expansion factor of d_model, increases expessivity per layer
+        d_state=d_state,
+        d_conv=d_conv,
+        expand=expand,
         dropout=dropout,
         prenorm="store_true",
         lr = lr

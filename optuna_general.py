@@ -51,7 +51,7 @@ def get_args():
                         help="Number of Optuna trials")
     parser.add_argument("--max_epochs", type=int, default=1000, #50 before
                         help="Max epochs per trial")
-    parser.add_argument("--prune_warmup", type=int, default=5,
+    parser.add_argument("--prune_warmup", type=int, default=20,
                         help="Epochs before Optuna pruning kicks in")
 
     # General
