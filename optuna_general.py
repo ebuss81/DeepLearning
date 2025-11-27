@@ -44,14 +44,14 @@ def get_args():
     parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_574_samples.pt')
     parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4', 'mamba'])
     parser.add_argument('--metric', type=str, default='acc', choices=["acc", "f1_macro"])
-    parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
+    parser.add_argument('--patience', type=int, default=100, help='Early stopping patience')
 
     # HPO setup
     parser.add_argument("--n_trials", type=int, default=100,    # 30 before
                         help="Number of Optuna trials")
     parser.add_argument("--max_epochs", type=int, default=1000, #50 before
                         help="Max epochs per trial")
-    parser.add_argument("--prune_warmup", type=int, default=5,
+    parser.add_argument("--prune_warmup", type=int, default=20,
                         help="Epochs before Optuna pruning kicks in")
 
     # General
