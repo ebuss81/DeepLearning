@@ -21,6 +21,7 @@ import optuna
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 
+from DeepLearning.models.s4.my_S4_dummy import test_metrics
 from data.loaders import load_my_dummy
 from optuna_model_details import *
 from engine.loop import train_one_epoch, evaluate
@@ -123,6 +124,8 @@ def main():
             early_stopper = EarlyStopping(patience=args.patience, mode="max")
 
             best_val_metric = 0.0
+            best_train_acc = 0.0
+            best_test_acc = 0.0
 
             # ---- training loop for this trial ----
             for epoch in range(max_epochs):
@@ -130,11 +133,15 @@ def main():
 
                 train_metrics = train_one_epoch(model, trainloader, optimizer, criterion, device)
                 val_metrics = evaluate(model, valloader, criterion, device, split_name="val")
+                test_metrics = evaluate(model, testloader, criterion, device, split_name="test")
+
                 scheduler.step()
 
                 val_metric = val_metrics[args.metric]
                 if val_metric > best_val_metric:
                     best_val_metric = val_metric
+                    best_train_acc = train_metrics[args.metric]
+                    best_test_acc = test_metrics[args.metric]
                     # Save a checkpoint for this trial’s best model
                     ckpt_name = f"trial_{trial.number}_best.pth"
                     save_checkpoint(
@@ -178,6 +185,9 @@ def main():
                 raise
 
         # Optuna will try to MAXIMIZE this (see create_study)
+        trial.set_user_attr("best_train_acc", best_train_acc)
+        trial.set_user_attr("best_test_acc", best_test_acc)
+        trial.set_user_attr("best_val_acc", best_val_metric)
         return best_val_metric
 
     # ---------------------------
@@ -196,6 +206,14 @@ def main():
     print("  params:")
     for k, v in best_trial.params.items():
         print(f"    {k}: {v}")
+
+    bt_train = best_trial.user_attrs.get("best_train_acc", float("nan"))
+    bt_val = best_trial.user_attrs.get("best_val_acc", float("nan"))
+    bt_test = best_trial.user_attrs.get("best_test_acc", float("nan"))
+    print("  metrics at best val epoch:")
+    print(f"    train_{args.metric}: {bt_train:.4f}")
+    print(f"    val_{args.metric}:   {bt_val:.4f}")
+    print(f"    test_{args.metric}:  {bt_test:.4f}")
 
     # optionally save study
     os.makedirs(f"optuna_results/{args.model}", exist_ok=True)
