@@ -146,14 +146,14 @@ def mamba_details(trial,device, d_input, d_output):
 
     # ---- model / loss / optimizer / sched ----
     model = build_mamba(
-        d_input=d_input,
-        d_output=d_output,
-        d_model=d_model,
-        n_layers=n_layers,
-        d_state=d_state,
-        d_conv=d_conv,
-        expand=expand,
-        dropout=dropout,
+        d_input=d_input,        # input feature dimension
+        d_output=d_output,      # output dimension (number of classes)
+        d_model=d_model,        # dimension of input output vector
+        n_layers=n_layers,      # number of Mamba layers
+        d_state=d_state,        # diemnsion of h(t),  A: d_model X d_state
+        d_conv=d_conv,          # convolutional kernel size
+        expand=expand,          # expansion factor of d_model in Mamba feedforwardfor gating
+        dropout=dropout,        # dropout rate
         prenorm="store_true",
         lr = lr
     ).to(device)
