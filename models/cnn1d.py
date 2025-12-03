@@ -50,8 +50,8 @@ class CNN1D(nn.Module):
         in_dim = d_model
         #n_mlp = 3
 
-        mlp_layers.append(nn.AdaptiveAvgPool1d(1))
-        mlp_layers.append(nn.Flatten())
+        mlp_layers.append(nn.AdaptiveAvgPool1d(1))  # (B, C, L') -> (B, C, 1) makes model independent of input length
+        mlp_layers.append(nn.Flatten())            # (B, C, 1) -> (B, C)
         #print("hi", n_mlp)
 
         for h in range(n_mlp-1):

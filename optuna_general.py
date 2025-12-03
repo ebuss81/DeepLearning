@@ -21,7 +21,7 @@ import optuna
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 
-from DeepLearning.models.s4.my_S4_dummy import test_metrics
+#from DeepLearning.models.s4.my_S4_dummy import test_metrics
 from data.loaders import load_my_dummy
 from optuna_model_details import *
 from engine.loop import train_one_epoch, evaluate
