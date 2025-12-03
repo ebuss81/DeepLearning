@@ -21,7 +21,7 @@ import optuna
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 
-from DeepLearning.models.s4.my_S4_dummy import test_metrics
+#from DeepLearning.models.s4.my_S4_dummy import test_metrics
 from data.loaders import load_my_dummy
 from optuna_model_details import *
 from engine.loop import train_one_epoch, evaluate
@@ -188,6 +188,8 @@ def main():
         trial.set_user_attr("best_train_acc", best_train_acc)
         trial.set_user_attr("best_test_acc", best_test_acc)
         trial.set_user_attr("best_val_acc", best_val_metric)
+        print(f"[Trial {trial.number}] best_train_{args.metric}: {best_train_acc:.4f}, best_val_{args.metric}: {best_val_metric:.4f}, best_test_{args.metric}: {best_test_acc:.4f}")
+
         return best_val_metric
 
     # ---------------------------
