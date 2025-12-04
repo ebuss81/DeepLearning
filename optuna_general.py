@@ -114,7 +114,7 @@ def main():
 
             early_stopper = EarlyStopping(patience=args.patience, mode="min")
 
-            best_loss_metric = 0.0
+            best_loss_metric = float("inf")
             best_train_acc = 0.0
             best_test_acc = 0.0
             best_val_acc = 0.0
