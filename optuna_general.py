@@ -110,7 +110,7 @@ def main():
             )
 
             criterion = nn.CrossEntropyLoss(
-                weight=class_weights.to(device),
+                #weight=class_weights.to(device),
                 label_smoothing=label_smoothing,
             )
 
@@ -121,11 +121,12 @@ def main():
                 optimizer = optim.AdamW(param_groups, lr=lr)
                 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
 
-            early_stopper = EarlyStopping(patience=args.patience, mode="max")
+            early_stopper = EarlyStopping(patience=args.patience, mode="min")
 
-            best_val_metric = 0.0
+            best_loss_metric = 0.0
             best_train_acc = 0.0
             best_test_acc = 0.0
+            best_val_acc = 0.0
 
             # ---- training loop for this trial ----
             for epoch in range(max_epochs):
@@ -137,28 +138,30 @@ def main():
 
                 scheduler.step()
 
-                val_metric = val_metrics[args.metric]
-                if val_metric > best_val_metric:
-                    best_val_metric = val_metric
+                #val_metric = val_metrics[args.metric]
+                loss = val_metrics["loss"]
+                if loss > best_loss_metric:
+                    best_loss_metric = loss
                     best_train_acc = train_metrics[args.metric]
                     best_test_acc = test_metrics[args.metric]
+                    best_val_acc = val_metrics[args.metric]
                     # Save a checkpoint for this trial’s best model
                     ckpt_name = f"trial_{trial.number}_best.pth"
                     save_checkpoint(
                         {"model": model.state_dict(),
                          "metric": args.metric,
-                         "val_metric": best_val_metric,
+                         "val_metric": best_val_acc,
                          "epoch": epoch},
                         out_dir=args.checkpoint_dir+f"/{args.model}/",
                         name=ckpt_name,
                     )
 
                 # also update Optuna with current val_acc
-                trial.report(val_metric, step=epoch)
+                trial.report(loss, step=epoch)
                 if epoch >= args.prune_warmup and trial.should_prune():
                     raise optuna.TrialPruned()
                 # Early stopping on val_acc
-                if early_stopper.step(val_metric, epoch):
+                if early_stopper.step(loss, epoch):
                     print(
                         f"Early stopping triggered at epoch {epoch}. "
                         f"Best val: {early_stopper.best:.2f}%"
@@ -184,19 +187,19 @@ def main():
             else:
                 raise
 
-        # Optuna will try to MAXIMIZE this (see create_study)
         trial.set_user_attr("best_train_acc", best_train_acc)
         trial.set_user_attr("best_test_acc", best_test_acc)
-        trial.set_user_attr("best_val_acc", best_val_metric)
-        print(f"[Trial {trial.number}] best_train_{args.metric}: {best_train_acc:.4f}, best_val_{args.metric}: {best_val_metric:.4f}, best_test_{args.metric}: {best_test_acc:.4f}")
+        trial.set_user_attr("best_val_acc", best_val_acc)
+        trial.set_user_attr("best_loss", best_loss_metric)
+        print(f"[Trial {trial.number}] loss: {best_loss_metric} | best_train_{args.metric}: {best_train_acc:.4f}, best_val_{args.metric}: {best_val_acc:.4f}, best_test_{args.metric}: {best_test_acc:.4f}")
 
-        return best_val_metric
+        return best_loss_metric
 
     # ---------------------------
     # Create study & optimize
     # ---------------------------
     study = optuna.create_study(
-        direction="maximize",
+        direction="minimize",
         sampler=TPESampler(seed=args.seed),
         pruner=MedianPruner(n_warmup_steps=args.prune_warmup),
     )
