@@ -138,7 +138,7 @@ def mamba_details(trial,device, d_input, d_output):
     batch_size = trial.suggest_categorical("batch_size", [4,8,16, 32, 64, 128])
     d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
     d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64])
-    d_conv = trial.suggest_categorical("d_conv", [3, 5, 9 ,17, 33, 65, 129])
+    d_conv = trial.suggest_categorical("d_conv", [2,3,4])
     expand = trial.suggest_int("expand", 1,5,step=1)
     n_layers = trial.suggest_int("n_layers", 1, 8, step=1)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
