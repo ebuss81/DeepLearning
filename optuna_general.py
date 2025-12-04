@@ -1,12 +1,3 @@
-"""
-Hyperparameter search for CNN1D using Optuna.
-
-Example:
-  python optuna_train_cnn1d.py \
-    --dev_path /path/to/dev.pt \
-    --test_path /path/to/test.pt \
-    --n_trials 50
-"""
 
 import os
 import argparse
@@ -140,7 +131,7 @@ def main():
 
                 #val_metric = val_metrics[args.metric]
                 loss = val_metrics["loss"]
-                if loss > best_loss_metric:
+                if loss < best_loss_metric:
                     best_loss_metric = loss
                     best_train_acc = train_metrics[args.metric]
                     best_test_acc = test_metrics[args.metric]
