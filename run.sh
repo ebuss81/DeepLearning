@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ARGS_LIST=(
-  "--model mamba --metric acc" 
-  "--model CNN1D --metric acc"
-#  "--model s4  --metric acc"
-  "--model Inception1D --metric acc"
+  "--model mamba --metric loss" 
+  "--model CNN1D --metric loss"
+#  "--model s4  --metric loss"
+  "--model Inception1D --metric loss"
 )
 
 for args in "${ARGS_LIST[@]}"; do
