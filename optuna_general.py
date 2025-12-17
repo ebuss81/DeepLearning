@@ -2,6 +2,7 @@
 import os
 import argparse
 from random import choices
+import copy
 
 import torch
 import torch.nn as nn
@@ -23,6 +24,8 @@ from engine.utils import (
     make_param_groups,
     save_checkpoint,
 )
+
+from engine.TemperatureScaling import TempScaledModel
 
 
 # ---------------------------
@@ -51,6 +54,17 @@ def get_args():
     parser.add_argument("--checkpoint_dir", type=str, default=f"optuna_results")
 
     return parser.parse_args()
+
+def temperature_test(model, device, valloader, testloader, criterion):
+    """Fit temperature on VAL, then re-evaluate VAL/TEST with scaled logits."""
+    model.eval()
+    ts_model = TempScaledModel(model, init_T=1.0, device=device).to(device)
+    ts_model.fit_temperature(valloader)  # fits scalar T on validation set
+
+    # Calibrated losses (CE == NLL) for reporting/selection
+    val_metrics_cal  = evaluate(ts_model, valloader, criterion, device, split_name="val")
+    test_metrics_cal = evaluate(ts_model, testloader, criterion, device, split_name="test")
+    return val_metrics_cal, test_metrics_cal, float(ts_model.T.detach().cpu())
 
 
 def main():
@@ -136,6 +150,7 @@ def main():
                     best_train_acc = train_metrics[args.metric]
                     best_test_acc = test_metrics[args.metric]
                     best_val_acc = val_metrics[args.metric]
+                    best_state = copy.deepcopy(model.state_dict())
                     # Save a checkpoint for this trial’s best model
                     ckpt_name = f"trial_{trial.number}_best.pth"
                     save_checkpoint(
@@ -158,6 +173,7 @@ def main():
                         f"Best val: {early_stopper.best:.2f}%"
                     )
                     break
+                model.load_state_dict(best_state)
 
         except RuntimeError as e:
             for k, v in trial.params.items():
@@ -177,6 +193,22 @@ def main():
                 raise optuna.TrialPruned()
             else:
                 raise
+
+        # ---- Temperature scaling on VAL only ----
+        val_metrics_cal, test_metrics_cal, learned_T = temperature_test(
+            model=model,
+            device=device,
+            valloader=valloader,
+            testloader=testloader,
+            criterion=criterion
+        )
+        # Store calibrated vs. uncalibrated for analysis
+        trial.set_user_attr("val_loss_uncal", best_loss_metric)
+        trial.set_user_attr("val_loss_cal", val_metrics_cal["loss"])
+        trial.set_user_attr("test_loss_uncal", test_metrics["loss"])
+        trial.set_user_attr("test_loss_cal", test_metrics_cal["loss"])
+        trial.set_user_attr("temp_T", learned_T)
+        print(f"val_loss_uncal: {val_metrics_cal['loss']},val_loss_cal: {test_metrics_cal['loss']}, test_loss_uncal: {test_metrics_cal['loss']}, test_loss_cal: {test_metrics_cal['loss']}, temp_T: {learned_T}")
 
         trial.set_user_attr("best_train_acc", best_train_acc)
         trial.set_user_attr("best_test_acc", best_test_acc)
