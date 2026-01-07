@@ -116,7 +116,7 @@ def main():
 
             criterion = nn.CrossEntropyLoss(
                 #weight=class_weights.to(device),
-                label_smoothing=label_smoothing,
+                #label_smoothing=label_smoothing,
             )
 
             param_groups = make_param_groups(model, weight_decay=weight_decay)
@@ -208,7 +208,7 @@ def main():
         trial.set_user_attr("test_loss_uncal", test_metrics["loss"])
         trial.set_user_attr("test_loss_cal", test_metrics_cal["loss"])
         trial.set_user_attr("temp_T", learned_T)
-        print(f"val_loss_uncal: {val_metrics_cal['loss']}, \n"
+        print(f"val_loss_uncal: {best_loss_metric}, \n"
               f"val_loss_cal: {val_metrics_cal['loss']}, \n"
               f"test_loss_uncal: {test_metrics['loss']}, \n"
               f"test_loss_cal: {test_metrics_cal['loss']}, \n"
