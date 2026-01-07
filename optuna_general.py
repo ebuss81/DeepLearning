@@ -173,7 +173,7 @@ def main():
                         f"Best val: {early_stopper.best:.2f}%"
                     )
                     break
-                model.load_state_dict(best_state)
+                #model.load_state_dict(best_state) # note: probnably on wrong place?
 
         except RuntimeError as e:
             for k, v in trial.params.items():
@@ -193,7 +193,7 @@ def main():
                 raise optuna.TrialPruned()
             else:
                 raise
-
+        model.load_state_dict(best_state)
         # ---- Temperature scaling on VAL only ----
         val_metrics_cal, test_metrics_cal, learned_T = temperature_test(
             model=model,
@@ -208,12 +208,16 @@ def main():
         trial.set_user_attr("test_loss_uncal", test_metrics["loss"])
         trial.set_user_attr("test_loss_cal", test_metrics_cal["loss"])
         trial.set_user_attr("temp_T", learned_T)
-        print(f"val_loss_uncal: {val_metrics_cal['loss']},val_loss_cal: {test_metrics_cal['loss']}, test_loss_uncal: {test_metrics_cal['loss']}, test_loss_cal: {test_metrics_cal['loss']}, temp_T: {learned_T}")
-
+        print(f"val_loss_uncal: {val_metrics_cal['loss']}, \n"
+              f"val_loss_cal: {val_metrics_cal['loss']}, \n"
+              f"test_loss_uncal: {test_metrics['loss']}, \n"
+              f"test_loss_cal: {test_metrics_cal['loss']}, \n"
+              f"temp_T: {learned_T}")
         trial.set_user_attr("best_train_acc", best_train_acc)
         trial.set_user_attr("best_test_acc", best_test_acc)
         trial.set_user_attr("best_val_acc", best_val_acc)
         trial.set_user_attr("best_loss", best_loss_metric)
+
         print(f"[Trial {trial.number}] loss: {best_loss_metric} | best_train_{args.metric}: {best_train_acc:.4f}, best_val_{args.metric}: {best_val_acc:.4f}, best_test_{args.metric}: {best_test_acc:.4f}")
 
         return best_loss_metric
