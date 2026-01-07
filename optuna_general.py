@@ -39,9 +39,9 @@ def get_args():
     parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
 
     # HPO setup
-    parser.add_argument("--n_trials", type=int, default=100,    # 30 before
+    parser.add_argument("--n_trials", type=int, default=1,    # 100 before
                         help="Number of Optuna trials")
-    parser.add_argument("--max_epochs", type=int, default=1000, #50 before
+    parser.add_argument("--max_epochs", type=int, default=1, #1000 before
                         help="Max epochs per trial")
     parser.add_argument("--prune_warmup", type=int, default=10,
                         help="Epochs before Optuna pruning kicks in")
