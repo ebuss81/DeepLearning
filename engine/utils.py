@@ -29,6 +29,7 @@ def create_dataloaders(
         num_workers=num_workers,
         pin_memory=pin_memory,
         drop_last=False,
+        persistent_workers=True, #note: included to speed up
     )
     valloader = DataLoader(
         val_set,
@@ -37,6 +38,7 @@ def create_dataloaders(
         num_workers=num_workers,
         pin_memory=pin_memory,
         drop_last=False,
+        persistent_workers=True,
     )
     testloader = DataLoader(
         test_set,
@@ -45,6 +47,7 @@ def create_dataloaders(
         num_workers=num_workers,
         pin_memory=pin_memory,
         drop_last=False,
+        persistent_workers=True,
     )
     return trainloader, valloader, testloader
 

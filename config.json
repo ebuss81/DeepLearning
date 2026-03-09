@@ -1,0 +1,20 @@
+{
+  "experiment": {
+    "experiment_name" : "Exp1",
+    "window_length" : "30min",
+    "resolution"  : "1s",
+    "start_datetime" : "2025-06-04_00:00",
+    "end_datetime" : "2025-06-21_23:59"
+  },
+"paths": {
+    "root": "./",
+    "optuna_path": "./LocalProcessing/OptunaResults",
+    "time_window_path": "./classification_data/00_time_windows",
+    "features_path": "./classification_data/01_features",
+    "splits_path": "./classification_data/02_test_train_val_split",
+    "results_path": "./classification_data/03_results",
+    "figures_path": "./classification_data/04_figures",
+    "phytonode_path": "data1/2025_Tomato_Waterstress/Exp1 - drought stress (camera failed after 1 week)/PN/",
+    "soilmoisture_path": "/media/wp/data1/2025_Tomato_Waterstress/Exp1 - drought stress (camera failed after 1 week)/Soil_moisture/"
+    }
+}

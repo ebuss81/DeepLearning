@@ -8,14 +8,15 @@ import torch
 import torch.optim as optim
 
 
-def CNN_details(trial,device, d_input, d_output):
-    lr = trial.suggest_float("lr", 1e-4, 1e-1, log=True) # logarithmic scale
-    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1, log=True) # logarithmic scale?
-    start_dim = trial.suggest_int("start_model_dim", 1, 16)
-    n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
+def CNN_details(trial,device, d_input, d_output):       #note changed!!
+    lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True) # logarithmic scale
+    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True) # logarithmic scale?
+    #start_dim = trial.suggest_int("start_model_dim", 1, 16)
+    start_dim = trial.suggest_categorical("start_model_dim", [8, 16, 32, 64])
+    n_layers = trial.suggest_int("n_layers", 4, 16, step=2)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
-    batch_size = trial.suggest_categorical("batch_size", [4,8,16, 32, 64, 128])
+    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65, 129])
     n_mlp = trial.suggest_int("n_mlp", 1, 6)
 
@@ -33,13 +34,15 @@ def CNN_details(trial,device, d_input, d_output):
     return model, lr, weight_decay, label_smoothing, batch_size
 
 def Inception_details(trial,device, d_input, d_output):
-    lr = trial.suggest_float("lr", 1e-4, 1e-1)
-    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
+    #lr = trial.suggest_float("lr", 1e-4, 1e-1)
+    #weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
+    lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
+    weight_decay =trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
     # d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
     # n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
     # dropout = trial.suggest_float("dropout", 0.0, 0.5)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
-    batch_size = trial.suggest_categorical("batch_size", [4,8,16, 32, 64, 128])
+    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     num_blocks = trial.suggest_int("num_blocks", 1, 4)
     num_modules = trial.suggest_int("num_modules", 1, 4)
     num_branches = trial.suggest_int("num_branches", 1, 4)
@@ -132,16 +135,18 @@ def s4_optimizer(model, lr, weight_decay, epochs):
 
 
 def mamba_details(trial,device, d_input, d_output):
-    lr = trial.suggest_float("lr", 1e-4, 1e-1)
-    weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
+    #r = trial.suggest_float("lr", 1e-4, 1e-2)
+    #weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
+    lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
+    weight_decay =trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
     label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
-    batch_size = trial.suggest_categorical("batch_size", [4,8,16, 32, 64, 128])
-    d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
+    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
+    d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256])
     d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64])
     d_conv = trial.suggest_categorical("d_conv", [2,3,4])
     expand = trial.suggest_int("expand", 1,5,step=1)
-    n_layers = trial.suggest_int("n_layers", 1, 8, step=1)
-    dropout = trial.suggest_float("dropout", 0.0, 0.5)
+    n_layers = trial.suggest_int("n_layers", 3, 10, step=1)
+    dropout = trial.suggest_float("dropout", 0.0, 0.3)
 
 
     # ---- model / loss / optimizer / sched ----

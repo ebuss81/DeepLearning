@@ -177,8 +177,8 @@ class InceptionModel(pl.LightningModule):
         self.test_outputs.append({"y_hat": y_hat.detach(), "y": y.clone().detach()})
         return {"test_loss": loss, "test_acc": acc}
 
-    def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=0.001)  # default lr = 0.001
+    #def configure_optimizers(self):
+    #    return torch.optim.Adam(self.parameters(), lr=0.001)  # default lr = 0.001
 
     def on_test_epoch_end(self):
         if not self.test_outputs:

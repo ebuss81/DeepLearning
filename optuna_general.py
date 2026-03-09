@@ -39,14 +39,14 @@ def get_args():
     parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_573_samples_30min.pt')
     parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4', 'mamba'])
     parser.add_argument('--metric', type=str, default='loss', choices=["acc", "f1_macro", "loss"])
-    parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
+    parser.add_argument('--patience', type=int, default=15, help='Early stopping patience') # note 50 before
 
     # HPO setup
-    parser.add_argument("--n_trials", type=int, default=1,    # 100 before
+    parser.add_argument("--n_trials", type=int, default=100,    # 100 before
                         help="Number of Optuna trials")
-    parser.add_argument("--max_epochs", type=int, default=1, #1000 before
+    parser.add_argument("--max_epochs", type=int, default=100, #1000 before
                         help="Max epochs per trial")
-    parser.add_argument("--prune_warmup", type=int, default=10,
+    parser.add_argument("--prune_warmup", type=int, default=3,
                         help="Epochs before Optuna pruning kicks in")
 
     # General
@@ -139,7 +139,7 @@ def main():
 
                 train_metrics = train_one_epoch(model, trainloader, optimizer, criterion, device)
                 val_metrics = evaluate(model, valloader, criterion, device, split_name="val")
-                test_metrics = evaluate(model, testloader, criterion, device, split_name="test")
+                ##test_metrics = evaluate(model, testloader, criterion, device, split_name="test") #note changed to accelarate
 
                 scheduler.step()
 
@@ -148,7 +148,7 @@ def main():
                 if loss < best_loss_metric:
                     best_loss_metric = loss
                     best_train_acc = train_metrics[args.metric]
-                    best_test_acc = test_metrics[args.metric]
+                    #best_test_acc = test_metrics[args.metric] #note changed to accelarate
                     best_val_acc = val_metrics[args.metric]
                     best_state = copy.deepcopy(model.state_dict())
                     # Save a checkpoint for this trial’s best model
@@ -194,6 +194,8 @@ def main():
             else:
                 raise
         model.load_state_dict(best_state)
+        test_metrics = evaluate(model, testloader, criterion, device, split_name="test")  # note changed to accelarate
+        """
         # ---- Temperature scaling on VAL only ----
         val_metrics_cal, test_metrics_cal, learned_T = temperature_test(
             model=model,
@@ -213,6 +215,7 @@ def main():
               f"test_loss_uncal: {test_metrics['loss']}, \n"
               f"test_loss_cal: {test_metrics_cal['loss']}, \n"
               f"temp_T: {learned_T}")
+        """
         trial.set_user_attr("best_train_acc", best_train_acc)
         trial.set_user_attr("best_test_acc", best_test_acc)
         trial.set_user_attr("best_val_acc", best_val_acc)
@@ -228,8 +231,14 @@ def main():
     study = optuna.create_study(
         direction="minimize",
         sampler=TPESampler(seed=args.seed),
-        pruner=MedianPruner(n_warmup_steps=args.prune_warmup),
-    )
+        pruner=optuna.pruners.HyperbandPruner(
+            min_resource=args.prune_warmup,
+            max_resource=200,
+            reduction_factor=3
+        )
+        )
+    #MedianPruner(n_warmup_steps=args.prune_warmup), # note changed to speed up
+
     study.optimize(objective, n_trials=args.n_trials)
 
     print("Best trial:")

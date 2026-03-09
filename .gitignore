@@ -110,6 +110,7 @@ logs/
 output/
 results/
 checkpoints/
+LocalProcessing/
 Data_raw
 # If using Docker
 *.pid
