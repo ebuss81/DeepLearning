@@ -35,16 +35,16 @@ def get_args():
     parser = argparse.ArgumentParser(description="Optuna HPO for 1D-CNN")
 
     # Data
-    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2865_samples_30min.pt')
-    parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_573_samples_30min.pt')
+    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_17265_samples_5min.pt')
+    parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_3453_samples_5min.pt')
     parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4', 'mamba'])
     parser.add_argument('--metric', type=str, default='loss', choices=["acc", "f1_macro", "loss"])
     parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
 
     # HPO setup
-    parser.add_argument("--n_trials", type=int, default=1,    # 100 before
+    parser.add_argument("--n_trials", type=int, default=100,    # 100 before
                         help="Number of Optuna trials")
-    parser.add_argument("--max_epochs", type=int, default=1, #1000 before
+    parser.add_argument("--max_epochs", type=int, default=1000, #1000 before
                         help="Max epochs per trial")
     parser.add_argument("--prune_warmup", type=int, default=10,
                         help="Epochs before Optuna pruning kicks in")
