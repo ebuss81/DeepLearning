@@ -132,6 +132,8 @@ def main():
             best_train_acc = 0.0
             best_test_acc = 0.0
             best_val_acc = 0.0
+            best_epoch = -1
+            best_state = None
 
             # ---- training loop for this trial ----
             for epoch in range(max_epochs):
@@ -151,7 +153,9 @@ def main():
                     #best_test_acc = test_metrics[args.metric] #note changed to accelarate
                     best_val_acc = val_metrics[args.metric]
                     best_state = copy.deepcopy(model.state_dict())
+                    best_epoch = epoch
                     # Save a checkpoint for this trial’s best model
+                    """removed for speed up
                     ckpt_name = f"trial_{trial.number}_best.pth"
                     save_checkpoint(
                         {"model": model.state_dict(),
@@ -161,10 +165,13 @@ def main():
                         out_dir=args.checkpoint_dir+f"/{args.model}/",
                         name=ckpt_name,
                     )
-
+                    """
                 # also update Optuna with current val_acc
-                trial.report(loss, step=epoch)
-                if epoch >= args.prune_warmup and trial.should_prune():
+                #trial.report(loss, step=epoch)
+                #if epoch >= args.prune_warmup and trial.should_prune():
+                #    raise optuna.TrialPruned()
+                trial.report(loss, step=epoch + 1)
+                if trial.should_prune():
                     raise optuna.TrialPruned()
                 # Early stopping on val_acc
                 if early_stopper.step(loss, epoch):
@@ -194,7 +201,20 @@ def main():
             else:
                 raise
         model.load_state_dict(best_state)
-        test_metrics = evaluate(model, testloader, criterion, device, split_name="test")  # note changed to accelarate
+        ckpt_name = f"trial_{trial.number}_best.pth"
+        save_checkpoint(
+            {
+                "model": model.state_dict(),
+                "metric": args.metric,
+                "val_metric": best_val_acc,
+                "epoch": best_epoch,  # better to store best_epoch instead, see below
+                "trial_number": trial.number,
+                "params": trial.params,
+            },
+            out_dir=args.checkpoint_dir + f"/{args.model}/",
+            name=ckpt_name,
+        )
+        ##test_metrics = evaluate(model, testloader, criterion, device, split_name="test")  # note changed to accelarate
         """
         # ---- Temperature scaling on VAL only ----
         val_metrics_cal, test_metrics_cal, learned_T = temperature_test(
@@ -233,7 +253,7 @@ def main():
         sampler=TPESampler(seed=args.seed),
         pruner=optuna.pruners.HyperbandPruner(
             min_resource=args.prune_warmup,
-            max_resource=200,
+            max_resource=args.max_epochs,
             reduction_factor=3
         )
         )
