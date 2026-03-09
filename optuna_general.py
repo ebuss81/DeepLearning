@@ -35,8 +35,8 @@ def get_args():
     parser = argparse.ArgumentParser(description="Optuna HPO for 1D-CNN")
 
     # Data
-    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_17265_samples_5min.pt')
-    parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_3453_samples_5min.pt')
+    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2865_samples_30min.pt')
+    parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_573_samples_30min.pt')
     parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4', 'mamba'])
     parser.add_argument('--metric', type=str, default='loss', choices=["acc", "f1_macro", "loss"])
     parser.add_argument('--patience', type=int, default=15, help='Early stopping patience') # note 50 before
@@ -257,7 +257,7 @@ def main():
     print(f"    test_{args.metric}:  {bt_test:.4f}")
 
     # optionally save study
-    os.makedirs(f"optuna_results/{args.model}", exist_ok=True)
+    os.makedirs(f"optuna_results/reduced/{args.model}", exist_ok=True)
     study.trials_dataframe().to_csv(f"optuna_results/{args.model}/study_trials.csv", index=False)
 
 
