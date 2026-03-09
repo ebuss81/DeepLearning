@@ -105,15 +105,14 @@ def main():
                 raise ValueError(f"Unknown model: {args.model}")
 
             max_epochs = args.max_epochs
-            if device == "cuda":        # speedd up
-                model = torch.compile(model)
+
 
 
             # ---- dataloaders (depend on batch_size) ----
             trainloader, valloader, testloader = create_dataloaders(
                 train_set, val_set, test_set,
                 batch_size=batch_size,
-                num_workers=6,
+                num_workers=8,
                 device=device,
             )
 
