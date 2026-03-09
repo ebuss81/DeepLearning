@@ -135,7 +135,7 @@ def main():
             best_test_acc = 0.0
             best_val_acc = 0.0
             best_epoch = -1
-            best_state = None
+            best_state = copy.deepcopy(model.state_dict())
 
             # ---- training loop for this trial ----
             for epoch in range(max_epochs):
