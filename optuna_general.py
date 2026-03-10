@@ -280,7 +280,7 @@ def main():
 
     # optionally save study
     os.makedirs(f"optuna_results/reduced/{args.model}", exist_ok=True)
-    study.trials_dataframe().to_csv(f"optuna_results/{args.model}/study_trials.csv", index=False)
+    study.trials_dataframe().to_csv(f"optuna_results/reduced/{args.model}/study_trials.csv", index=False)
 
 
 if __name__ == "__main__":
