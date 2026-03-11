@@ -16,13 +16,14 @@ os.chdir(PROJECT_ROOT)
 print("cwd:", os.getcwd())
 print("cwd config exists:", Path("config.json").exists())
 
+
 class OptunaResults:
     def __init__(self):
         with open("config.json", "r") as f:
             cfg = json.load(f)
         self.exp_e = cfg["experiment"]
         self.exp_p = cfg["paths"]
-        self.models = ["Inception1D","CNN1D","mamba"]
+        self.models = ["mamba","Inception1D","CNN1D"]
 
 
     def read_result(self,model):

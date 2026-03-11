@@ -235,7 +235,7 @@ def main():
                 "trial_number": trial.number,
                 "params": trial.params,
             },
-            out_dir=args.checkpoint_dir + f"/{args.model}/",
+            out_dir=args.checkpoint_dir + f"/{args.time_horizon}/{args.model}/",
             name=ckpt_name,
         )
         ##test_metrics = evaluate(model, testloader, criterion, device, split_name="test")  # note changed to accelarate
@@ -301,8 +301,8 @@ def main():
     print(f"    test_{args.metric}:  {bt_test:.4f}")
 
     # optionally save study
-    os.makedirs(f"optuna_results/{args.model}", exist_ok=True)
-    study.trials_dataframe().to_csv(f"optuna_results/{args.model}/study_trials.csv", index=False)
+    os.makedirs(f"optuna_results/{args.time_horizon}/{args.model}", exist_ok=True)
+    study.trials_dataframe().to_csv(f"optuna_results/{args.time_horizon}/{args.model}/study_trials.csv", index=False)
 
 
 if __name__ == "__main__":
