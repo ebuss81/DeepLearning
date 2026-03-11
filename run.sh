@@ -1,10 +1,9 @@
 #!/bin/bash
 
 ARGS_LIST=(
-#  "--model mamba --metric acc" # stil optrimising for los but printing acc
-#  "--model CNN1D --metric acc"
-#  "--model s4  --metric acc"
-  "--model Inception1D --metric acc"
+  "--model mamba --metric acc --time_horizon 5min" # stil optrimising for los but printing acc
+  "--model CNN1D --metric acc --time_horizon 5min"
+  "--model Inception1D --metric acc --time_horizon 5min"
 )
 
 for args in "${ARGS_LIST[@]}"; do
