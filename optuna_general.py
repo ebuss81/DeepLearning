@@ -1,5 +1,6 @@
 
 import os
+import glob
 import argparse
 from random import choices
 import copy
@@ -35,8 +36,9 @@ def get_args():
     parser = argparse.ArgumentParser(description="Optuna HPO for 1D-CNN")
 
     # Data
-    parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2865_samples_30min.pt')
-    parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_573_samples_30min.pt')
+    #parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2865_samples_30min.pt')
+    #parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_573_samples_30min.pt')
+    parser.add_argument('--time_horizon', type=str, choices=["1min","5min", "30min", "1h", "6h"], required=True)
     parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4', 'mamba'])
     parser.add_argument('--metric', type=str, default='loss', choices=["acc", "f1_macro", "loss"])
     parser.add_argument('--patience', type=int, default=15, help='Early stopping patience') # note 50 before
@@ -74,13 +76,33 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     cudnn.benchmark = (device == "cuda")
 
+    base_dir = "Data_raw/2classes"
+
+    dev_files = glob.glob(os.path.join(base_dir, f"*dev*{args.time_horizon}.pt"))
+    test_files = glob.glob(os.path.join(base_dir, f"*test*{args.time_horizon}.pt"))
+    groups_files = glob.glob(os.path.join(base_dir, f"*groups*{args.time_horizon}.csv"))
+    #"Data_raw/2classes/Raw_TS_Classification_groups_2865_samples_30min.csv"
+
+    if len(dev_files) != 1:
+        raise ValueError(f"Expected one dev file, found: {dev_files}")
+
+    if len(test_files) != 1:
+        raise ValueError(f"Expected one test file, found: {test_files}")
+    if len(groups_files) != 1:
+        raise ValueError(f"Expected one group, found: {groups_files}")
+
+    dev_path = dev_files[0]
+    test_path = test_files[0]
+    groups_path = groups_files[0]
+
     # ---------------------------
     # Load data ONCE (reused in every trial)
     # ---------------------------
     (train_set, val_set, test_set,
      d_input, d_output, class_weights) = load_my_dummy(
-        dev_path=args.dev_path,
-        test_path=args.test_path,
+        dev_path=dev_path,
+        test_path=test_path,
+        group_path = groups_path,
         seed=args.seed,
     )
 
@@ -279,8 +301,8 @@ def main():
     print(f"    test_{args.metric}:  {bt_test:.4f}")
 
     # optionally save study
-    os.makedirs(f"optuna_results/reduced/{args.model}", exist_ok=True)
-    study.trials_dataframe().to_csv(f"optuna_results/reduced/{args.model}/study_trials.csv", index=False)
+    os.makedirs(f"optuna_results/{args.model}", exist_ok=True)
+    study.trials_dataframe().to_csv(f"optuna_results/{args.model}/study_trials.csv", index=False)
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ class OptunaResults:
             cfg = json.load(f)
         self.exp_e = cfg["experiment"]
         self.exp_p = cfg["paths"]
-        self.models = ["CNN1D","mamba"]
+        self.models = ["Inception1D","CNN1D","mamba"]
 
 
     def read_result(self,model):
@@ -59,7 +59,7 @@ class OptunaResults:
         plt.show()
 
     def run(self):
-        my_columns = ['user_attrs_best_loss','user_attrs_best_test_acc','user_attrs_best_train_acc','user_attrs_best_val_acc','user_attrs_temp_T', 'user_attrs_val_loss_uncal', 'user_attrs_val_loss_cal', 'user_attrs_test_loss_uncal', 'user_attrs_test_loss_cal']
+        my_columns = ['user_attrs_best_loss','user_attrs_best_test_acc','user_attrs_best_train_acc','user_attrs_best_val_acc']#,'user_attrs_temp_T', 'user_attrs_val_loss_uncal', 'user_attrs_val_loss_cal', 'user_attrs_test_loss_uncal', 'user_attrs_test_loss_cal']
 
         #user_attrs_test_loss_cal
         #user_attrs_test_loss_uncal
@@ -70,8 +70,8 @@ class OptunaResults:
             #print(study_results[my_columns]
             best_row = study_results.loc[study_results['user_attrs_best_loss'].idxmin()]
             print(best_row[my_columns])
-            best_row = study_results.loc[study_results['user_attrs_best_train_acc'].idxmax()]
-            print(best_row[my_columns])
+            ##best_row = study_results.loc[study_results['user_attrs_best_train_acc'].idxmax()]
+            #print(best_row[my_columns])
             self.plot_all_params(model,study_results)
 
 

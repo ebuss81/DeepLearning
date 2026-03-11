@@ -7,7 +7,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from torch.utils.data import TensorDataset
 import pandas as pd
 
-def load_my_dummy(dev_path, test_path, seed=42, val_size=0.2):
+def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2):
     """
     Load 'my_dummy' dataset from dev/test .pt files and create train/val/test splits.
 
@@ -46,7 +46,7 @@ def load_my_dummy(dev_path, test_path, seed=42, val_size=0.2):
 
     # Stratified split train/val from dev set
     idxs = np.arange(len(y_dev))
-    groups = pd.read_csv("Data_raw/2classes/Raw_TS_Classification_groups_2865_samples_30min.csv") #note hard coded1
+    groups = pd.read_csv(group_path) #note hard coded1
     groups = np.array(groups['plant_id'].values)
     # Combine class + group into a single stratification label
     strat_labels = np.array(list(zip(y_dev.numpy(), groups)))
