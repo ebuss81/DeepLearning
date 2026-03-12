@@ -22,8 +22,9 @@ from optuna_model_details import (
 from engine.utils import create_dataloaders, set_seed
 from engine.loop import evaluate
 from engine.TemperatureScaling import TempScaledModel
-
-
+from engine.loop import train_one_epoch, evaluate
+from engine.callbacks import EarlyStopping
+import copy
 #@dataclass
 ##class RunnerConfig:
 ##    time_horizon: str
@@ -97,6 +98,8 @@ class TrialModelRunner:
         self.weight_decay = None
         self.label_smoothing = None
 
+        self.load_trained_weights = None
+
     def load_everything(self) -> None:
         self._load_checkpoint()
         self._load_data()
@@ -160,7 +163,7 @@ class TrialModelRunner:
 
     def _load_data(self) -> None:
         try:
-            base_dir = self.cfg_p["data_path2"]
+            base_dir = self.cfg_p["data_path"]
         except KeyError as e:
             base_dir = self.cfg_p["data_path2"]
         print("hi",base_dir)
@@ -196,8 +199,10 @@ class TrialModelRunner:
         else:
             raise ValueError(f"Unknown model_name: {self.cfg_e['model']}")
 
-        state_dict = self.checkpoint["model"]
-        model.load_state_dict(state_dict)
+        if self.load_trained_weights == True:
+            state_dict = self.checkpoint["model"]
+            model.load_state_dict(state_dict)
+
         model.to(self.device)
         model.eval()
 
@@ -313,21 +318,61 @@ class TrialModelRunner:
         save_path = f"{out_dir}/{filename}"
 
         df = pd.DataFrame(list(results.items()), columns=["metric", "value"])
+        print(df)
         df.to_csv(save_path, index=False)
 
         print(f"Metrics saved to {save_path}")
 
         return df
+
+    def retrain(self, max_epochs=None, patience=30):
+        self._require_ready()
+
+        max_epochs = 1000# max_epochs or self.checkpoint.get("epoch", 100)
+
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
+        scaler = torch.cuda.amp.GradScaler(enabled=(self.device == "cuda"))
+        early_stopper = EarlyStopping(patience=patience, mode="min")
+
+        best_state = copy.deepcopy(self.model.state_dict())
+        best_loss = float("inf")
+        best_epoch = -1
+
+        for epoch in range(max_epochs):
+            train_metrics = train_one_epoch(
+                self.model, self.trainloader, optimizer, self.criterion, self.device, scaler
+            )
+            val_metrics = evaluate(self.model, self.valloader, self.criterion, self.device, split_name="val")
+
+            scheduler.step()
+
+            if val_metrics["loss"] < best_loss:
+                best_loss = val_metrics["loss"]
+                best_state = copy.deepcopy(self.model.state_dict())
+                best_epoch = epoch
+
+            if early_stopper.step(val_metrics["loss"], epoch):
+                break
+
+        self.model.load_state_dict(best_state)
+        self.model.eval()
+        return {"best_epoch": best_epoch, "best_val_loss": best_loss}
+
+
+
 if __name__ == "__main__":
     runner = TrialModelRunner()
+    runner.load_trained_weights = False
 
     runner.load_everything()
 
-    cm = runner.confusion_matrix("val",class_names=["class_0", "class_1"])
-    print("\nVAL CONFUSION MATRIX")
-    print(cm)
-    cm = runner.confusion_matrix("test",class_names=["class_0", "class_1"])
-    print("\nTEST CONFUSION MATRIX")
-    print(cm)
+    #cm = runner.confusion_matrix("val",class_names=["class_0", "class_1"])
+    #print("\nVAL CONFUSION MATRIX")
+    #print(cm)
+    #cm = runner.confusion_matrix("test",class_names=["class_0", "class_1"])
+    #print("\nTEST CONFUSION MATRIX")
+    #print(cm)
 
-    runner.save_metrics_csv()
+    #runner.save_metrics_csv()
+    runner.retrain()

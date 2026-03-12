@@ -28,7 +28,6 @@ from engine.utils import (
 
 from engine.TemperatureScaling import TempScaledModel
 
-
 # ---------------------------
 # Args
 # ---------------------------
