@@ -4,7 +4,7 @@ import glob
 import argparse
 from random import choices
 import copy
-
+import joblib
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -43,7 +43,7 @@ def get_args():
     parser.add_argument('--patience', type=int, default=15, help='Early stopping patience') # note 50 before
 
     # HPO setup
-    parser.add_argument("--n_trials", type=int, default=100,    # 100 before
+    parser.add_argument("--n_trials", type=int, default=200,    # 100 before
                         help="Number of Optuna trials")
     parser.add_argument("--max_epochs", type=int, default=100, #1000 before
                         help="Max epochs per trial")
@@ -302,6 +302,7 @@ def main():
     # optionally save study
     os.makedirs(f"optuna_results/{args.time_horizon}/{args.model}", exist_ok=True)
     study.trials_dataframe().to_csv(f"optuna_results/{args.time_horizon}/{args.model}/study_trials.csv", index=False)
+    joblib.dump(study, f"optuna_results/{args.time_horizon}/{args.model}/optuna_study.pkl")
 
 
 if __name__ == "__main__":
