@@ -43,7 +43,7 @@ best_trial = {
     },
     "5min": {
         "CNN1D": 94,
-        "Inception1D": None,
+        "Inception1D": 50,
         "mamba": 99
     },
     "30min": {
@@ -374,5 +374,5 @@ if __name__ == "__main__":
     #print("\nTEST CONFUSION MATRIX")
     #print(cm)
 
-    #runner.save_metrics_csv()
-    runner.retrain()
+    runner.save_metrics_csv()
+    #runner.retrain()

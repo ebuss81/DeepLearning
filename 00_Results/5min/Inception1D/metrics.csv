@@ -1,0 +1,12 @@
+metric,value
+trial,50.0
+temperature,161355424.0
+train_loss,
+train_acc,50.00724008108891
+val_loss,
+val_acc,50.04344048653345
+test_loss,
+test_acc,50.01448016217782
+train_loss_cal,
+val_loss_cal,
+test_loss_cal,
