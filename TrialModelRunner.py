@@ -325,12 +325,16 @@ class TrialModelRunner:
 
         return df
 
-    def retrain(self, max_epochs=None, patience=30):
+    def retrain(self, max_epochs=None, patience=30, filename="retrain_history.csv"):
         self._require_ready()
 
-        max_epochs = 1000# max_epochs or self.checkpoint.get("epoch", 100)
+        max_epochs = 1000  # or: max_epochs or self.checkpoint.get("epoch", 100)
 
-        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        optimizer = torch.optim.AdamW(
+            self.model.parameters(),
+            lr=self.lr,
+            weight_decay=self.weight_decay
+        )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
         scaler = torch.cuda.amp.GradScaler(enabled=(self.device == "cuda"))
         early_stopper = EarlyStopping(patience=patience, mode="min")
@@ -339,27 +343,72 @@ class TrialModelRunner:
         best_loss = float("inf")
         best_epoch = -1
 
+        history = []
+
         for epoch in range(max_epochs):
             train_metrics = train_one_epoch(
-                self.model, self.trainloader, optimizer, self.criterion, self.device, scaler
+                self.model,
+                self.trainloader,
+                optimizer,
+                self.criterion,
+                self.device,
+                scaler
             )
-            val_metrics = evaluate(self.model, self.valloader, self.criterion, self.device, split_name="val")
+            val_metrics = evaluate(
+                self.model,
+                self.valloader,
+                self.criterion,
+                self.device,
+                split_name="val"
+            )
 
             scheduler.step()
+
+            row = {
+                "epoch": epoch + 1,
+                "train_loss": train_metrics["loss"],
+                "train_acc": train_metrics["acc"],
+                "val_loss": val_metrics["loss"],
+                "val_acc": val_metrics["acc"],
+                "lr": optimizer.param_groups[0]["lr"],
+            }
+            history.append(row)
+
+            print(
+                f"Epoch {epoch + 1:03d} | "
+                f"train_loss={row['train_loss']:.6f} | "
+                f"train_acc={row['train_acc']:.4f} | "
+                f"val_loss={row['val_loss']:.6f} | "
+                f"val_acc={row['val_acc']:.4f}"
+            )
 
             if val_metrics["loss"] < best_loss:
                 best_loss = val_metrics["loss"]
                 best_state = copy.deepcopy(self.model.state_dict())
-                best_epoch = epoch
+                best_epoch = epoch + 1
 
             if early_stopper.step(val_metrics["loss"], epoch):
+                print(f"Early stopping at epoch {epoch + 1}")
                 break
 
         self.model.load_state_dict(best_state)
         self.model.eval()
-        return {"best_epoch": best_epoch, "best_val_loss": best_loss}
 
+        out_dir = f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}"
+        os.makedirs(out_dir, exist_ok=True)
 
+        save_path = f"{out_dir}/{filename}"
+        history_df = pd.DataFrame(history)
+        history_df.to_csv(save_path, index=False)
+
+        print(f"Retrain history saved to {save_path}")
+
+        return {
+            "best_epoch": best_epoch,
+            "best_val_loss": best_loss,
+            "history": history_df,
+            "save_path": save_path,
+        }
 
 if __name__ == "__main__":
     runner = TrialModelRunner()
@@ -374,5 +423,7 @@ if __name__ == "__main__":
     #print("\nTEST CONFUSION MATRIX")
     #print(cm)
 
-    runner.save_metrics_csv()
+    #runner.save_metrics_csv()
     #runner.retrain()
+    retrain_results = runner.retrain(filename="retrain_history.csv")
+    print(retrain_results["history"])
