@@ -160,10 +160,10 @@ class TrialModelRunner:
 
     def _load_data(self) -> None:
         try:
-            base_dir = self.cfg_p["data_path"]
+            base_dir = self.cfg_p["data_path2"]
         except KeyError as e:
             base_dir = self.cfg_p["data_path2"]
-
+        print("hi",base_dir)
         dev_files = glob.glob(os.path.join(base_dir, f"*dev*{self.cfg_e['window_length']}.pt"))
         test_files = glob.glob(os.path.join(base_dir, f"*test*{self.cfg_e['window_length']}.pt"))
         groups_files = glob.glob(os.path.join(base_dir, f"*groups*{self.cfg_e['window_length']}.csv"))

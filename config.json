@@ -1,8 +1,8 @@
 {
   "experiment": {
     "experiment_name" : "Exp1",
-    "window_length" : "5min",
-    "model" : "CNN1D",
+    "window_length" : "30min",
+    "model" : "mamba",
     "seed": 42,
     "num_workers": 8
   },
@@ -10,7 +10,7 @@
     "root": "./",
     "optuna_path": "./LocalProcessing/OptunaResults",
     "data_path": "/home/wp/Documents/GitHub/DataProcessing/BotanicalGardenTomato/Raw_TS_Classification",
-    "data_path2": "Data_raw/2classes",
+    "data_path2": "./Data_raw/2classes",
     "results_path": "./00_Results",
     "figures_path": "./classification_data/04_figures",
     "phytonode_path": "data1/2025_Tomato_Waterstress/Exp1 - drought stress (camera failed after 1 week)/PN/",
