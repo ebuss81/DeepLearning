@@ -379,7 +379,9 @@ class TrialModelRunner:
                 f"train_loss={row['train_loss']:.6f} | "
                 f"train_acc={row['train_acc']:.4f} | "
                 f"val_loss={row['val_loss']:.6f} | "
-                f"val_acc={row['val_acc']:.4f}"
+                f"val_acc={row['val_acc']:.4f} |"
+                f"best_epoch={best_epoch + 1:03d} | "
+                f"patience={row['patience']:03d} | "
             )
 
             if val_metrics["loss"] < best_loss:
