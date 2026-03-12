@@ -48,7 +48,7 @@ best_trial = {
     },
     "30min": {
         "CNN1D": 25,
-        "Inception1D": 9,
+        "Inception1D":89,# 9,
         "mamba": 48
     },
     "1h": {
@@ -381,8 +381,7 @@ class TrialModelRunner:
                 f"val_loss={row['val_loss']:.6f} | "
                 f"val_acc={row['val_acc']:.4f} |"
                 f"best_epoch={best_epoch + 1:03d} | "
-                f"patience={row['patience']:03d} | "
-            )
+                )
 
             if val_metrics["loss"] < best_loss:
                 best_loss = val_metrics["loss"]
