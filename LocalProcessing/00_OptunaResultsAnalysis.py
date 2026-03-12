@@ -23,7 +23,7 @@ class OptunaResults:
             cfg = json.load(f)
         self.exp_e = cfg["experiment"]
         self.exp_p = cfg["paths"]
-        self.models = ["mamba","Inception1D","CNN1D"]
+        self.models = ["CNN1D","mamba"] #"Inception1D"
 
 
     def read_result(self,model):

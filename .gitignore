@@ -111,7 +111,6 @@ output/
 results/
 checkpoints/
 LocalProcessing/
-00_Results/
 Data_raw
 # If using Docker
 *.pid

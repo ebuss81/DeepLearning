@@ -41,9 +41,9 @@ best_trial = {
         "mamba": None
     },
     "5min": {
-        "CNN1D": None,
+        "CNN1D": 94,
         "Inception1D": None,
-        "mamba": None
+        "mamba": 99
     },
     "30min": {
         "CNN1D": 25,
@@ -56,9 +56,9 @@ best_trial = {
         "mamba": None
     },
     "6h": {
-        "CNN1D": None,
-        "Inception1D": None,
-        "mamba": None
+        "CNN1D": 47,
+        "Inception1D": 77,
+        "mamba": 40
     }
 }
 
@@ -323,11 +323,11 @@ if __name__ == "__main__":
 
     runner.load_everything()
 
-    #cm = runner.confusion_matrix("val",class_names=["class_0", "class_1"])
-    #print("\nVAL CONFUSION MATRIX")
-    #print(cm)
-    #cm = runner.confusion_matrix("test",class_names=["class_0", "class_1"])
-    #print("\nTEST CONFUSION MATRIX")
-    #print(cm)
+    cm = runner.confusion_matrix("val",class_names=["class_0", "class_1"])
+    print("\nVAL CONFUSION MATRIX")
+    print(cm)
+    cm = runner.confusion_matrix("test",class_names=["class_0", "class_1"])
+    print("\nTEST CONFUSION MATRIX")
+    print(cm)
 
     runner.save_metrics_csv()
