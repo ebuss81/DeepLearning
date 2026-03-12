@@ -163,7 +163,7 @@ class TrialModelRunner:
 
     def _load_data(self) -> None:
         try:
-            base_dir = self.cfg_p["data_path2"]
+            base_dir = self.cfg_p["data_path"]
         except KeyError as e:
             base_dir = self.cfg_p["data_path2"]
         print("hi",base_dir)
@@ -381,7 +381,6 @@ class TrialModelRunner:
                 f"val_loss={row['val_loss']:.6f} | "
                 f"val_acc={row['val_acc']:.4f} |"
                 f"best_epoch={best_epoch + 1:03d} | "
-                f"patience={row['patience']:03d} | "
             )
 
             if val_metrics["loss"] < best_loss:
@@ -425,7 +424,7 @@ if __name__ == "__main__":
     #print("\nTEST CONFUSION MATRIX")
     #print(cm)
 
-    #runner.save_metrics_csv()
+    runner.save_metrics_csv()
     #runner.retrain()
-    retrain_results = runner.retrain(filename="retrain_history.csv")
-    print(retrain_results["history"])
+    #retrain_results = runner.retrain(filename="retrain_history.csv")
+    #print(retrain_results["history"])
