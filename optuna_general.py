@@ -115,13 +115,13 @@ def main():
         try:
             # ---- load model ----
             if args.model == "CNN1D":
-                model, lr, weight_decay, label_smoothing, batch_size = CNN_details(trial, device, d_input, d_output)
+                model, lr, weight_decay, batch_size = CNN_details(trial, device, d_input, d_output)
             elif args.model == "Inception1D":
-                model, lr, weight_decay, label_smoothing, batch_size = Inception_details(trial, device, d_input, d_output)
+                model, lr, weight_decay, batch_size = Inception_details(trial, device, d_input, d_output)
             elif args.model == "s4":
-                model, lr, weight_decay, label_smoothing, batch_size = s4_details(trial, device, d_input, d_output)
+                model, lr, weight_decay, batch_size = s4_details(trial, device, d_input, d_output)
             elif args.model == "mamba":
-                model, lr, weight_decay, label_smoothing, batch_size = mamba_details(trial, device, d_input, d_output)
+                model, lr, weight_decay, batch_size = mamba_details(trial, device, d_input, d_output)
             else:
                 raise ValueError(f"Unknown model: {args.model}")
 
