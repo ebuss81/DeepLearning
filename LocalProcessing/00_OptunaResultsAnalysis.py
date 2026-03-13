@@ -23,7 +23,7 @@ class OptunaResults:
             cfg = json.load(f)
         self.exp_e = cfg["experiment"]
         self.exp_p = cfg["paths"]
-        self.models = ["Inception1D"]# ["CNN1D","Inception1D","mamba"] #"Inception1D"
+        self.models = ["Inception_long"]# ["CNN1D","Inception1D","mamba"] #"Inception1D"
 
 
     def read_result(self,model):
@@ -36,8 +36,9 @@ class OptunaResults:
         # select params columns + extra column
         cols = df_filtered.columns[df_filtered.columns.str.startswith("params")].tolist()
         cols.append("user_attrs_best_loss")
+        cols.append('user_attrs_best_train_acc')
         cols.append('user_attrs_best_val_acc')
-
+        #cols.append()
         data = df_filtered[cols]
 
         n = len(cols)

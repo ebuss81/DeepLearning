@@ -188,13 +188,13 @@ class TrialModelRunner:
         fixed_trial = optuna.trial.FixedTrial(params)
 
         if self.cfg_e["model"] == "CNN1D":
-            model, lr, weight_decay, label_smoothing, batch_size = CNN_details(
+            model, lr, weight_decay, batch_size = CNN_details(
                 fixed_trial, self.device, self.d_input, self.d_output)
         elif self.cfg_e["model"] == "Inception1D":
-            model, lr, weight_decay, label_smoothing, batch_size = Inception_details(
+            model, lr, weight_decay, batch_size = Inception_details(
                 fixed_trial, self.device, self.d_input, self.d_output)
         elif self.cfg_e["model"] == "mamba":
-            model, lr, weight_decay, label_smoothing, batch_size = mamba_details(
+            model, lr, weight_decay, batch_size = mamba_details(
                 fixed_trial, self.device, self.d_input, self.d_output)
         else:
             raise ValueError(f"Unknown model_name: {self.cfg_e['model']}")
@@ -209,7 +209,6 @@ class TrialModelRunner:
         self.model = model
         self.lr = lr
         self.weight_decay = weight_decay
-        self.label_smoothing = label_smoothing
         self.batch_size = batch_size#self.config.batch_size_override or batch_size
         self.criterion = nn.CrossEntropyLoss()
 
@@ -374,19 +373,19 @@ class TrialModelRunner:
             }
             history.append(row)
 
+            if val_metrics["loss"] < best_loss:
+                best_loss = val_metrics["loss"]
+                best_state = copy.deepcopy(self.model.state_dict())
+                best_epoch = epoch + 1
+
             print(
                 f"Epoch {epoch + 1:03d} | "
                 f"train_loss={row['train_loss']:.6f} | "
                 f"train_acc={row['train_acc']:.4f} | "
                 f"val_loss={row['val_loss']:.6f} | "
                 f"val_acc={row['val_acc']:.4f} |"
-                f"best_epoch={best_epoch + 1:03d} | "
+                f"best_epoch={best_epoch :03d} | "
             )
-
-            if val_metrics["loss"] < best_loss:
-                best_loss = val_metrics["loss"]
-                best_state = copy.deepcopy(self.model.state_dict())
-                best_epoch = epoch + 1
 
             if early_stopper.step(val_metrics["loss"], epoch):
                 print(f"Early stopping at epoch {epoch + 1}")
@@ -424,7 +423,7 @@ if __name__ == "__main__":
     #print("\nTEST CONFUSION MATRIX")
     #print(cm)
 
-    runner.save_metrics_csv()
-    #runner.retrain()
+    #runner.save_metrics_csv()
+    runner.retrain()
     #retrain_results = runner.retrain(filename="retrain_history.csv")
     #print(retrain_results["history"])

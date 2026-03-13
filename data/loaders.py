@@ -7,6 +7,23 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from torch.utils.data import TensorDataset
 import pandas as pd
 
+
+def normalize_from_train(X_train, X_val, X_test, eps=1e-8):
+    """
+    Normalize datasets using statistics from the training set only.
+    Expected shape: [N, L, C]
+    """
+    mean = X_train.mean(dim=(0, 1), keepdim=True)
+    std = X_train.std(dim=(0, 1), keepdim=True)
+    std = torch.clamp(std, min=eps)
+
+    X_train = (X_train - mean) / std
+    X_val = (X_val - mean) / std
+    X_test = (X_test - mean) / std
+
+    return X_train, X_val, X_test, mean, std
+
+
 def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2):
     """
     Load 'my_dummy' dataset from dev/test .pt files and create train/val/test splits.
@@ -57,8 +74,35 @@ def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2):
     #train_idx, val_idx = next(sss.split(idxs, y_dev.numpy()))
     train_idx, val_idx = next(sss.split(idxs, strat_labels))
 
-    train_set = TensorDataset(X_dev[train_idx], y_dev[train_idx])
-    val_set = TensorDataset(X_dev[val_idx], y_dev[val_idx])
+    X_train = X_dev[train_idx]
+    y_train = y_dev[train_idx]
+
+    X_val = X_dev[val_idx]
+    y_val = y_dev[val_idx]
+
+    print("BEFORE NORM")
+    print("X_train nan:", torch.isnan(X_train).any())
+    print("X_val nan:", torch.isnan(X_val).any())
+    print("X_test nan:", torch.isnan(X_test).any())
+
+    print("X_train inf:", torch.isinf(X_train).any())
+    print("X_val inf:", torch.isinf(X_val).any())
+    print("X_test inf:", torch.isinf(X_test).any())
+
+    print("X_train shape:", X_train.shape)
+    print("X_val shape:", X_val.shape)
+    print("X_test shape:", X_test.shape)
+
+    X_train, X_val, X_test, mean, std = normalize_from_train(X_train, X_val, X_test)
+    print("train nan:", np.isnan(X_train).any())
+    print("val nan:", np.isnan(X_val).any())
+    print("test nan:", np.isnan(X_test).any())
+
+    print("train inf:", np.isinf(X_train).any())
+    print("std min:", std.min())
+
+    train_set = TensorDataset(X_train, y_train)
+    val_set = TensorDataset(X_val, y_val)
     test_set = TensorDataset(X_test, y_test)
 
     # Class weights (inverse frequency; normalized)
