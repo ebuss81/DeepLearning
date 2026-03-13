@@ -14,11 +14,13 @@ def train_one_epoch(model, loader, optimizer, criterion, device, scaler):
 
         optimizer.zero_grad(set_to_none=True)
 
-        with torch.cuda.amp.autocast(enabled=(device == "cuda")):
+        with torch.cuda.amp.autocast(enabled=False):#(device == "cuda")):
             outputs = model(inputs)
             loss = criterion(outputs, targets)
 
         scaler.scale(loss).backward()
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(),1.0)
         scaler.step(optimizer)
         scaler.update()
 

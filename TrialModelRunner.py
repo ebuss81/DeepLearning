@@ -48,7 +48,7 @@ best_trial = {
     },
     "30min": {
         "CNN1D": 25,
-        "Inception1D":89,# 9,
+        "Inception1D":112,#89,# 9,
         "mamba": 48
     },
     "1h": {
@@ -163,7 +163,7 @@ class TrialModelRunner:
 
     def _load_data(self) -> None:
         try:
-            base_dir = self.cfg_p["data_path"]
+            base_dir = self.cfg_p["data_path2"]
         except KeyError as e:
             base_dir = self.cfg_p["data_path2"]
         print("hi",base_dir)
@@ -188,13 +188,13 @@ class TrialModelRunner:
         fixed_trial = optuna.trial.FixedTrial(params)
 
         if self.cfg_e["model"] == "CNN1D":
-            model, lr, weight_decay, label_smoothing, batch_size = CNN_details(
+            model, lr, weight_decay, batch_size = CNN_details(
                 fixed_trial, self.device, self.d_input, self.d_output)
         elif self.cfg_e["model"] == "Inception1D":
-            model, lr, weight_decay, label_smoothing, batch_size = Inception_details(
+            model, lr, weight_decay, batch_size = Inception_details(
                 fixed_trial, self.device, self.d_input, self.d_output)
         elif self.cfg_e["model"] == "mamba":
-            model, lr, weight_decay, label_smoothing, batch_size = mamba_details(
+            model, lr, weight_decay, batch_size = mamba_details(
                 fixed_trial, self.device, self.d_input, self.d_output)
         else:
             raise ValueError(f"Unknown model_name: {self.cfg_e['model']}")
@@ -209,7 +209,6 @@ class TrialModelRunner:
         self.model = model
         self.lr = lr
         self.weight_decay = weight_decay
-        self.label_smoothing = label_smoothing
         self.batch_size = batch_size#self.config.batch_size_override or batch_size
         self.criterion = nn.CrossEntropyLoss()
 
@@ -325,7 +324,7 @@ class TrialModelRunner:
 
         return df
 
-    def retrain(self, max_epochs=None, patience=30, filename="retrain_history.csv"):
+    def retrain(self, max_epochs=None, patience=50, filename="retrain_history.csv"):
         self._require_ready()
 
         max_epochs = 1000  # or: max_epochs or self.checkpoint.get("epoch", 100)
@@ -336,7 +335,7 @@ class TrialModelRunner:
             weight_decay=self.weight_decay
         )
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
-        scaler = torch.cuda.amp.GradScaler(enabled=(self.device == "cuda"))
+        scaler = torch.cuda.amp.GradScaler(enabled=False)#(self.device == "cuda"))
         early_stopper = EarlyStopping(patience=patience, mode="min")
 
         best_state = copy.deepcopy(self.model.state_dict())

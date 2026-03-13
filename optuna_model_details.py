@@ -7,7 +7,7 @@ from models.mamba import build_mamba
 import torch
 import torch.optim as optim
 
-
+"""
 def CNN_details(trial,device, d_input, d_output):       #note changed!!
     lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True) # logarithmic scale
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True) # logarithmic scale?
@@ -85,16 +85,6 @@ def s4_details(trial,device, d_input, d_output):
     return model, lr, weight_decay, batch_size
 
 def s4_optimizer(model, lr, weight_decay, epochs):
-    """
-    S4 requires a specific optimizer setup.
-
-    The S4 layer (A, B, C, dt) parameters typically
-    require a smaller learning rate (typically 0.001), with no weight decay.
-
-    The rest of the model can be trained with a higher learning rate (e.g. 0.004, 0.01)
-    and weight decay (if desired).
-    """
-
     # All parameters in the model
     all_parameters = list(model.parameters())
 
@@ -180,7 +170,6 @@ def CNN_details(trial,device, d_input, d_output):       #note changed!!
     start_dim = trial.suggest_categorical("start_model_dim", [8, 16, 32, 64])
     n_layers = trial.suggest_int("n_layers", 4, 12, step=2)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
-    label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65, 129])
     n_mlp = trial.suggest_int("n_mlp", 1, 6)
@@ -196,7 +185,7 @@ def CNN_details(trial,device, d_input, d_output):       #note changed!!
         n_mlp=n_mlp,
     ).to(device)
 
-    return model, lr, weight_decay, label_smoothing, batch_size
+    return model, lr, weight_decay, batch_size
 
 def Inception_details(trial,device, d_input, d_output):
     #lr = trial.suggest_float("lr", 1e-4, 1e-1)
@@ -206,7 +195,6 @@ def Inception_details(trial,device, d_input, d_output):
     # d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
     # n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
     # dropout = trial.suggest_float("dropout", 0.0, 0.5)
-    label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     num_blocks = trial.suggest_int("num_blocks", 1, 4)
     num_modules = trial.suggest_int("num_modules", 2, 6)
@@ -226,7 +214,7 @@ def Inception_details(trial,device, d_input, d_output):
                               lr=lr,
                               n_classes=d_output
                               ).to(device)
-    return model, lr, weight_decay, label_smoothing, batch_size
+    return model, lr, weight_decay, batch_size
 
 def s4_details(trial,device, d_input, d_output):
     lr = trial.suggest_float("lr", 1e-4, 1e-1)
@@ -295,7 +283,6 @@ def mamba_details(trial,device, d_input, d_output):
     #weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
     lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
     weight_decay =trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
-    label_smoothing = trial.suggest_float("label_smoothing", 0.0, 0.2)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256])
     d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64])
@@ -319,6 +306,6 @@ def mamba_details(trial,device, d_input, d_output):
         lr = lr
     ).to(device)
 
-    return model, lr, weight_decay, label_smoothing, batch_size
+    return model, lr, weight_decay, batch_size
 
-"""
+
