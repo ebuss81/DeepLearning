@@ -274,12 +274,12 @@ def main():
     study = optuna.create_study(
         direction="minimize",
         sampler=TPESampler(seed=args.seed),
-        pruner=optuna.pruners.HyperbandPruner(
-            min_resource=args.prune_warmup,
-            max_resource=args.max_epochs,
-            reduction_factor=3
-        )
-        )
+        #pruner=optuna.pruners.HyperbandPruner(
+        #    min_resource=args.prune_warmup,
+        #    max_resource=args.max_epochs,
+        #    reduction_factor=3)
+        #)
+        pruner = optuna.pruners.MedianPruner(n_warmup_steps=args.prune_warmup)
     #MedianPruner(n_warmup_steps=args.prune_warmup), # note changed to speed up
 
     study.optimize(objective, n_trials=args.n_trials)
