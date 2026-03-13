@@ -41,7 +41,7 @@ def Inception_details(trial,device, d_input, d_output):
     # n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
     # dropout = trial.suggest_float("dropout", 0.0, 0.5)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
-    num_blocks = trial.suggest_int("num_blocks", 2, 8)
+    num_blocks = trial.suggest_int("num_blocks", 1, 4)
     num_modules = trial.suggest_int("num_modules", 4, 8)
     num_branches = trial.suggest_int("num_branches", 4, 8)
     out_channels = trial.suggest_categorical("out_channels", [128, 256, 512])
