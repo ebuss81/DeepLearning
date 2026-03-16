@@ -53,7 +53,7 @@ def evaluate(model, loader, criterion, device, split_name="val"):
         inputs = inputs.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
 
-        with torch.cuda.amp.autocast(enabled=(device == "cuda")):
+        with torch.cuda.amp.autocast(enabled=False):#(device == "cuda")):
             outputs = model(inputs)
             loss = criterion(outputs, targets)
 
