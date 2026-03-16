@@ -25,6 +25,9 @@ from engine.TemperatureScaling import TempScaledModel
 from engine.loop import train_one_epoch, evaluate
 from engine.callbacks import EarlyStopping
 import copy
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("TkAgg")
 #@dataclass
 ##class RunnerConfig:
 ##    time_horizon: str
@@ -409,12 +412,44 @@ class TrialModelRunner:
             "history": history_df,
             "save_path": save_path,
         }
+    def plot_retrain(self):
+        df = pd.read_csv(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/retrain_history.csv")
+        window = 10
 
+        df["val_loss_smooth"] = df["val_loss"].rolling(window, center=True).mean()
+        df["val_acc_smooth"] = df["val_acc"].rolling(window, center=True).mean()
+        df["train_loss_smooth"] = df["train_loss"].rolling(window, center=True).mean()
+        df["train_acc_smooth"] = df["train_acc"].rolling(window, center=True).mean()
+
+        plt.figure(figsize=(12, 5))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(df["epoch"], df["train_loss"], alpha=0.3, label="train_loss raw")
+        plt.plot(df["epoch"], df["val_loss"], alpha=0.3, label="val_loss raw")
+        plt.plot(df["epoch"], df["train_loss_smooth"], label="train_loss smooth")
+        plt.plot(df["epoch"], df["val_loss_smooth"], label="val_loss smooth")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.title("Loss")
+        plt.legend()
+
+        plt.subplot(1, 2, 2)
+        plt.plot(df["epoch"], df["train_acc"], alpha=0.3, label="train_acc raw")
+        plt.plot(df["epoch"], df["val_acc"], alpha=0.3, label="val_acc raw")
+        plt.plot(df["epoch"], df["train_acc_smooth"], label="train_acc smooth")
+        plt.plot(df["epoch"], df["val_acc_smooth"], label="val_acc smooth")
+        plt.xlabel("Epoch")
+        plt.ylabel("Accuracy")
+        plt.title("Accuracy")
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
 if __name__ == "__main__":
     runner = TrialModelRunner()
     runner.load_trained_weights = False
 
-    runner.load_everything()
+    #runner.load_everything()
 
     #cm = runner.confusion_matrix("val",class_names=["class_0", "class_1"])
     #print("\nVAL CONFUSION MATRIX")
@@ -424,6 +459,7 @@ if __name__ == "__main__":
     #print(cm)
 
     #runner.save_metrics_csv()
-    runner.retrain()
+    #runner.retrain()
     #retrain_results = runner.retrain(filename="retrain_history.csv")
     #print(retrain_results["history"])
+    runner.plot_retrain()

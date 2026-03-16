@@ -14,6 +14,7 @@ import optuna
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 
+from DeepLearning.models.s4.my_S4_dummy import best_acc
 #from DeepLearning.models.s4.my_S4_dummy import test_metrics
 from data.loaders import load_my_dummy
 from optuna_model_details import *
@@ -152,6 +153,7 @@ def main():
             early_stopper = EarlyStopping(patience=args.patience, mode="min")
 
             best_loss_metric = float("inf")
+            best_acc_metric = 0
             best_train_acc = 0.0
             best_test_acc = 0.0
             best_val_acc = 0.0
@@ -170,8 +172,11 @@ def main():
 
                 #val_metric = val_metrics[args.metric]
                 loss = val_metrics["loss"]
-                if loss < best_loss_metric:
+                acc = val_metrics[args.metric]
+                #if loss < best_loss_metric:
+                if acc > best_acc_metric:
                     best_loss_metric = loss
+                    best_acc_metric = acc
                     best_train_acc = train_metrics[args.metric]
                     #best_test_acc = test_metrics[args.metric] #note changed to accelarate
                     best_val_acc = val_metrics[args.metric]
@@ -266,7 +271,8 @@ def main():
 
         print(f"[Trial {trial.number}] loss: {best_loss_metric} | best_train_{args.metric}: {best_train_acc:.4f}, best_val_{args.metric}: {best_val_acc:.4f}, best_test_{args.metric}: {best_test_acc:.4f}")
 
-        return best_loss_metric
+        #return best_loss_metric
+        return best_acc_metric
 
     # ---------------------------
     # Create study & optimize
