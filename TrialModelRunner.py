@@ -47,14 +47,14 @@ best_trial = {
         "mamba": 99
     },
     "30min": {
-        "CNN1D": 25,
-        "Inception1D":112,#89,# 9,
-        "mamba": 48
+        "CNN1D": 76,
+        "Inception1D":75,#89,# 9,
+        "mamba": 92
     },
     "1h": {
-        "CNN1D": None,
-        "Inception1D": None,
-        "mamba": None
+        "CNN1D": 23,
+        "Inception1D": 38,
+        "mamba": 54
     },
     "6h": {
         "CNN1D": 47,
@@ -73,7 +73,7 @@ class TrialModelRunner:
 
         self.trial = best_trial[self.cfg_e["window_length"]][self.cfg_e["model"]]
         os.makedirs(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}", exist_ok=True)
-        self.checkpoint_path = f"{self.cfg_p['optuna_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
+        self.checkpoint_path = f"{self.cfg_p['optuna_path2']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
         set_seed(self.cfg_e["seed"])
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"

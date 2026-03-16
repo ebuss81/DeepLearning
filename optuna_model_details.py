@@ -7,7 +7,7 @@ from models.mamba import build_mamba
 import torch
 import torch.optim as optim
 
-"""
+
 def CNN_details(trial,device, d_input, d_output):       #note changed!!
     lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True) # logarithmic scale
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True) # logarithmic scale?
@@ -309,3 +309,4 @@ def mamba_details(trial,device, d_input, d_output):
     return model, lr, weight_decay, batch_size
 
 
+"""

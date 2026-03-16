@@ -37,7 +37,7 @@ def get_args():
     # Data
     #parser.add_argument('--dev_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_dev_2865_samples_30min.pt')
     #parser.add_argument('--test_path', type=str, default='Data_raw/2classes/Raw_TS_Classification_test_573_samples_30min.pt')
-    parser.add_argument('--time_horizon', type=str, choices=["1min","5min", "30min", "1h", "6h"], required=True)
+    parser.add_argument('--time_horizon', type=str, choices=["1min","5min", "30min", "1h", "6h","30min_3classes"], required=True)
     parser.add_argument('--model', type=str, default='Inception1D', choices=['CNN1D', 'Inception1D', 's4', 'mamba'])
     parser.add_argument('--metric', type=str, default='loss', choices=["acc", "f1_macro", "loss"])
     parser.add_argument('--patience', type=int, default=15, help='Early stopping patience') # note 50 before
@@ -274,12 +274,12 @@ def main():
     study = optuna.create_study(
         direction="minimize",
         sampler=TPESampler(seed=args.seed),
-        #pruner=optuna.pruners.HyperbandPruner(
-        #    min_resource=args.prune_warmup,
-        #    max_resource=args.max_epochs,
-        #    reduction_factor=3)
-        #)
-        pruner = optuna.pruners.MedianPruner(n_warmup_steps=args.prune_warmup)
+        pruner=optuna.pruners.HyperbandPruner(
+            min_resource=args.prune_warmup,
+            max_resource=args.max_epochs,
+            reduction_factor=3)
+        )
+        #pruner = optuna.pruners.MedianPruner(n_warmup_steps=args.prune_warmup))
     #MedianPruner(n_warmup_steps=args.prune_warmup), # note changed to speed up
 
     study.optimize(objective, n_trials=args.n_trials)

@@ -1,14 +1,15 @@
 {
   "experiment": {
     "experiment_name" : "Exp1",
-    "window_length" : "30min",
-    "model" : "mamba",
+    "window_length" : "1h",
+    "model" : "CNN1D",
     "seed": 42,
     "num_workers": 8
   },
 "paths": {
     "root": "./",
     "optuna_path": "./LocalProcessing/OptunaResults",
+    "optuna_path2":"./optuna_results",
     "data_path": "/home/wp/Documents/GitHub/DataProcessing/BotanicalGardenTomato/Raw_TS_Classification",
     "data_path2": "./Data_raw/2classes",
     "results_path": "./00_Results",
