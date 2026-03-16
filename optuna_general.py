@@ -148,7 +148,7 @@ def main():
             else:
                 optimizer = optim.AdamW(param_groups, lr=lr)
                 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
-            scaler = torch.cuda.amp.GradScaler(enabled=(device == "cuda"))  # init once
+            scaler = torch.cuda.amp.GradScaler(enabled= False)#(device == "cuda"))  # init once
             early_stopper = EarlyStopping(patience=args.patience, mode="min")
 
             best_loss_metric = float("inf")
