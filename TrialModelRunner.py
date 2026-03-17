@@ -55,7 +55,7 @@ best_trial = {
         "mamba": 92
     },
     "1h": {
-        "CNN1D": 23,
+        "CNN1D": 1,
         "Inception1D": 38,
         "mamba": 54
     },
@@ -63,6 +63,11 @@ best_trial = {
         "CNN1D": 47,
         "Inception1D": 77,
         "mamba": 40
+    },
+    "30min_3classes":{
+        "CNN1D":99,
+        "Inception1D": 9,
+        "mamba": 25
     }
 }
 
@@ -76,7 +81,7 @@ class TrialModelRunner:
 
         self.trial = best_trial[self.cfg_e["window_length"]][self.cfg_e["model"]]
         os.makedirs(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}", exist_ok=True)
-        self.checkpoint_path = f"{self.cfg_p['optuna_path2']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
+        self.checkpoint_path = f"{self.cfg_p['optuna_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
         set_seed(self.cfg_e["seed"])
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -166,7 +171,7 @@ class TrialModelRunner:
 
     def _load_data(self) -> None:
         try:
-            base_dir = self.cfg_p["data_path2"]
+            base_dir = self.cfg_p["data_path"]
         except KeyError as e:
             base_dir = self.cfg_p["data_path2"]
         print("hi",base_dir)
@@ -242,6 +247,7 @@ class TrialModelRunner:
         return preds, targets
 
     def _save_confusion_matrix_csv(self, cm, save_path, class_names=None):
+        print(cm)
         if class_names is not None:
             df = pd.DataFrame(cm, index=class_names, columns=class_names)
         else:
@@ -354,14 +360,16 @@ class TrialModelRunner:
                 optimizer,
                 self.criterion,
                 self.device,
-                scaler
+                scaler,
+                save_preds=True
             )
             val_metrics = evaluate(
                 self.model,
                 self.valloader,
                 self.criterion,
                 self.device,
-                split_name="val"
+                split_name="val",
+                save_preds=True
             )
 
             scheduler.step()
@@ -447,19 +455,19 @@ class TrialModelRunner:
         plt.show()
 if __name__ == "__main__":
     runner = TrialModelRunner()
-    runner.load_trained_weights = False
+    runner.load_trained_weights = True#False
 
-    #runner.load_everything()
+    runner.load_everything()
 
-    #cm = runner.confusion_matrix("val",class_names=["class_0", "class_1"])
-    #print("\nVAL CONFUSION MATRIX")
-    #print(cm)
-    #cm = runner.confusion_matrix("test",class_names=["class_0", "class_1"])
-    #print("\nTEST CONFUSION MATRIX")
-    #print(cm)
+    cm = runner.confusion_matrix("val",class_names=["class_0", "class_1","class_2"])
+    print("\nVAL CONFUSION MATRIX")
+    print(cm)
+    cm = runner.confusion_matrix("test",class_names=["class_0", "class_1","class_2"])
+    print("\nTEST CONFUSION MATRIX")
+    print(cm)
 
     #runner.save_metrics_csv()
     #runner.retrain()
     #retrain_results = runner.retrain(filename="retrain_history.csv")
     #print(retrain_results["history"])
-    runner.plot_retrain()
+    #runner.plot_retrain()
