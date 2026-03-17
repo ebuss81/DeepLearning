@@ -14,7 +14,7 @@ import optuna
 from optuna.pruners import MedianPruner
 from optuna.samplers import TPESampler
 
-from DeepLearning.models.s4.my_S4_dummy import best_acc
+#from DeepLearning.models.s4.my_S4_dummy import best_acc
 #from DeepLearning.models.s4.my_S4_dummy import test_metrics
 from data.loaders import load_my_dummy
 from optuna_model_details import *
@@ -150,7 +150,7 @@ def main():
                 optimizer = optim.AdamW(param_groups, lr=lr)
                 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
             scaler = torch.cuda.amp.GradScaler(enabled= False)#(device == "cuda"))  # init once
-            early_stopper = EarlyStopping(patience=args.patience, mode="min")
+            early_stopper = EarlyStopping(patience=args.patience, mode="max") #note min/max
 
             best_loss_metric = float("inf")
             best_acc_metric = 0
@@ -202,7 +202,8 @@ def main():
                 if trial.should_prune():
                     raise optuna.TrialPruned()
                 # Early stopping on val_acc
-                if early_stopper.step(loss, epoch):
+                #if early_stopper.step(loss, epoch):
+                if early_stopper.step(acc,epoch):
                     print(
                         f"Early stopping triggered at epoch {epoch}. "
                         f"Best val: {early_stopper.best:.2f}%"
@@ -278,7 +279,7 @@ def main():
     # Create study & optimize
     # ---------------------------
     study = optuna.create_study(
-        direction="minimize",
+        direction="maximize",  #note "minimize" or "maximize
         sampler=TPESampler(seed=args.seed),
         pruner=optuna.pruners.HyperbandPruner(
             min_resource=args.prune_warmup,
