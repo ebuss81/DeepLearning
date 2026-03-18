@@ -66,7 +66,7 @@ class OptunaResults:
 
     def inspect_study(self, model):
         study_path = f"{self.exp_p['optuna_path']}/{self.exp_e['window_length']}/{model}/optuna_study.pkl"
-
+        print(study_path)
         study = joblib.load(study_path)
 
         print("\n===== STUDY INFO =====")
@@ -101,7 +101,7 @@ class OptunaResults:
             print(best_row[my_columns])
             ##best_row = study_results.loc[study_results['user_attrs_best_train_acc'].idxmax()]
             #print(best_row[my_columns])
-            #self.plot_all_params(model,study_results)
+            self.plot_all_params(model,study_results)
             self.inspect_study(model)
 
 

@@ -150,7 +150,7 @@ def main():
                 optimizer = optim.AdamW(param_groups, lr=lr)
                 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
             scaler = torch.cuda.amp.GradScaler(enabled= False)#(device == "cuda"))  # init once
-            early_stopper = EarlyStopping(patience=args.patience, mode="max") #note min/max
+            early_stopper = EarlyStopping(patience=args.patience, mode="min") #note min/max
 
             best_loss_metric = float("inf")
             best_acc_metric = 0
@@ -173,8 +173,8 @@ def main():
                 #val_metric = val_metrics[args.metric]
                 loss = val_metrics["loss"]
                 acc = val_metrics[args.metric]
-                #if loss < best_loss_metric:
-                if acc > best_acc_metric:
+                if loss < best_loss_metric:
+                #if acc > best_acc_metric:
                     best_loss_metric = loss
                     best_acc_metric = acc
                     best_train_acc = train_metrics[args.metric]
@@ -202,8 +202,8 @@ def main():
                 if trial.should_prune():
                     raise optuna.TrialPruned()
                 # Early stopping on val_acc
-                #if early_stopper.step(loss, epoch):
-                if early_stopper.step(acc,epoch):
+                if early_stopper.step(loss, epoch):
+                #if early_stopper.step(acc,epoch):
                     print(
                         f"Early stopping triggered at epoch {epoch}. "
                         f"Best val: {early_stopper.best:.2f}%"
@@ -272,14 +272,14 @@ def main():
 
         print(f"[Trial {trial.number}] loss: {best_loss_metric} | best_train_{args.metric}: {best_train_acc:.4f}, best_val_{args.metric}: {best_val_acc:.4f}, best_test_{args.metric}: {best_test_acc:.4f}")
 
-        #return best_loss_metric
-        return best_acc_metric
+        return best_loss_metric
+        #return best_acc_metric
 
     # ---------------------------
     # Create study & optimize
     # ---------------------------
     study = optuna.create_study(
-        direction="maximize",  #note "minimize" or "maximize
+        direction="minimize",  #note "minimize" or "maximize
         sampler=TPESampler(seed=args.seed),
         pruner=optuna.pruners.HyperbandPruner(
             min_resource=args.prune_warmup,

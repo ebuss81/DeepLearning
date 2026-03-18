@@ -12,12 +12,12 @@ def CNN_details(trial,device, d_input, d_output):       #note changed!!
     lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True) # logarithmic scale
     weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True) # logarithmic scale?
     #start_dim = trial.suggest_int("start_model_dim", 1, 16)
-    start_dim = trial.suggest_categorical("start_model_dim", [8, 16, 32, 64])
-    n_layers = trial.suggest_int("n_layers", 4, 12, step=2)
+    start_dim = trial.suggest_categorical("start_model_dim", [4, 8, 16, 32, 64, 128])
+    n_layers = trial.suggest_int("n_layers", 2, 8, step=2)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
-    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
-    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65, 129])
-    n_mlp = trial.suggest_int("n_mlp", 1, 6)
+    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64])
+    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65])
+    n_mlp = trial.suggest_int("n_mlp", 1, 4)
 
     # ---- model / loss / optimizer / sched ----
     model = build_cnn1d(
@@ -42,11 +42,11 @@ def Inception_details(trial,device, d_input, d_output):
     # dropout = trial.suggest_float("dropout", 0.0, 0.5)
     batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     num_blocks = trial.suggest_int("num_blocks", 1, 4)
-    num_modules = trial.suggest_int("num_modules", 4, 8)
+    num_modules = trial.suggest_int("num_modules", 3,6)
     num_branches = trial.suggest_int("num_branches", 4, 8)
-    out_channels = trial.suggest_categorical("out_channels", [128, 256, 512])
-    bottleneck_channels = trial.suggest_categorical("bottleneck_channels", [2, 4, 8, 16, 32, 64])
-    kernel_size = trial.suggest_categorical("kernel_size", [9, 17, 33,])
+    out_channels = trial.suggest_categorical("out_channels", [32,64,128, 256])
+    bottleneck_channels = trial.suggest_categorical("bottleneck_channels", [4, 8, 16, 32])
+    kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33,65])
 
     # ---- model / loss / optimizer / sched ----
     model = build_inception1d(num_blocks=num_blocks,
@@ -130,8 +130,8 @@ def mamba_details(trial,device, d_input, d_output):
     d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256])
     d_state = trial.suggest_categorical("d_state", [8, 16, 32, 64])
     d_conv = trial.suggest_categorical("d_conv", [2,3,4])
-    expand = trial.suggest_int("expand", 1,5,step=1)
-    n_layers = trial.suggest_int("n_layers", 3, 10, step=1)
+    expand = trial.suggest_int("expand", 2,6,step=1)
+    n_layers = trial.suggest_int("n_layers", 5, 12, step=1)
     dropout = trial.suggest_float("dropout", 0.0, 0.3)
 
 

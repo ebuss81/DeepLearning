@@ -27,6 +27,16 @@ def zscore_per_sample(x, axis=None, eps=1e-8):
     mean = np.mean(x, axis=axis, keepdims=True)
     std = np.std(x, axis=axis, keepdims=True)
     return (x - mean) / (std + eps)
+def robust_scale_per_sample(x, axis=None, eps=1e-8):
+    """
+    x: numpy array (single sample)
+    axis: same semantics as zscore_per_sample
+    """
+    median = np.median(x, axis=axis, keepdims=True)
+    q75 = np.percentile(x, 75, axis=axis, keepdims=True)
+    q25 = np.percentile(x, 25, axis=axis, keepdims=True)
+    iqr = q75 - q25
+    return (x - median) / (iqr + eps)
 
 
 def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2, norm_mode= "per_sample"):
@@ -90,15 +100,15 @@ def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2, norm_mo
 
     elif norm_mode == "per_sample":
         X_train = torch.tensor(
-            np.stack([zscore_per_sample(x.numpy()) for x in X_train], axis=0),
+            np.stack([robust_scale_per_sample(x.numpy()) for x in X_train], axis=0),
             dtype=X_train.dtype,
         )
         X_val = torch.tensor(
-            np.stack([zscore_per_sample(x.numpy()) for x in X_val], axis=0),
+            np.stack([robust_scale_per_sample(x.numpy()) for x in X_val], axis=0),
             dtype=X_val.dtype,
         )
         X_test = torch.tensor(
-            np.stack([zscore_per_sample(x.numpy()) for x in X_test], axis=0),
+            np.stack([robust_scale_per_sample(x.numpy()) for x in X_test], axis=0),
             dtype=X_test.dtype,
         )
 
