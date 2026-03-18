@@ -2,7 +2,7 @@
   "experiment": {
     "experiment_name" : "Exp1",
     "window_length" : "30min_3classes",
-    "model" : "Inception1D",
+    "model" : "mamba",
     "seed": 42,
     "num_workers": 8
   },

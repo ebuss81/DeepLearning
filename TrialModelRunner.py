@@ -25,9 +25,9 @@ from engine.TemperatureScaling import TempScaledModel
 from engine.loop import train_one_epoch, evaluate
 from engine.callbacks import EarlyStopping
 import copy
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use("TkAgg")
+#import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use("TkAgg")
 #@dataclass
 ##class RunnerConfig:
 ##    time_horizon: str
@@ -81,7 +81,7 @@ class TrialModelRunner:
 
         self.trial = best_trial[self.cfg_e["window_length"]][self.cfg_e["model"]]
         os.makedirs(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}", exist_ok=True)
-        self.checkpoint_path = f"{self.cfg_p['optuna_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
+        self.checkpoint_path = f"{self.cfg_p['optuna_path2']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
         set_seed(self.cfg_e["seed"])
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -171,7 +171,7 @@ class TrialModelRunner:
 
     def _load_data(self) -> None:
         try:
-            base_dir = self.cfg_p["data_path"]
+            base_dir = self.cfg_p["data_path2"]
         except KeyError as e:
             base_dir = self.cfg_p["data_path2"]
         print("hi",base_dir)
