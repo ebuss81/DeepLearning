@@ -23,8 +23,13 @@ def normalize_from_train(X_train, X_val, X_test, eps=1e-8):
 
     return X_train, X_val, X_test, mean, std
 
+def zscore_per_sample(x, axis=None, eps=1e-8):
+    mean = np.mean(x, axis=axis, keepdims=True)
+    std = np.std(x, axis=axis, keepdims=True)
+    return (x - mean) / (std + eps)
 
-def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2):
+
+def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2, norm_mode= "per_sample"):
     """
     Load 'my_dummy' dataset from dev/test .pt files and create train/val/test splits.
 
@@ -80,26 +85,28 @@ def load_my_dummy(dev_path, test_path,group_path, seed=42, val_size=0.2):
     X_val = X_dev[val_idx]
     y_val = y_dev[val_idx]
 
-    print("BEFORE NORM")
-    print("X_train nan:", torch.isnan(X_train).any())
-    print("X_val nan:", torch.isnan(X_val).any())
-    print("X_test nan:", torch.isnan(X_test).any())
+    if norm_mode == "global":
+        X_train, X_val, X_test, mean, std = normalize_from_train(X_train, X_val, X_test)
 
-    print("X_train inf:", torch.isinf(X_train).any())
-    print("X_val inf:", torch.isinf(X_val).any())
-    print("X_test inf:", torch.isinf(X_test).any())
+    elif norm_mode == "per_sample":
+        X_train = torch.tensor(
+            np.stack([zscore_per_sample(x.numpy()) for x in X_train], axis=0),
+            dtype=X_train.dtype,
+        )
+        X_val = torch.tensor(
+            np.stack([zscore_per_sample(x.numpy()) for x in X_val], axis=0),
+            dtype=X_val.dtype,
+        )
+        X_test = torch.tensor(
+            np.stack([zscore_per_sample(x.numpy()) for x in X_test], axis=0),
+            dtype=X_test.dtype,
+        )
 
-    print("X_train shape:", X_train.shape)
-    print("X_val shape:", X_val.shape)
-    print("X_test shape:", X_test.shape)
+    elif norm_mode == "none":
+        pass
 
-    X_train, X_val, X_test, mean, std = normalize_from_train(X_train, X_val, X_test)
-    print("train nan:", np.isnan(X_train).any())
-    print("val nan:", np.isnan(X_val).any())
-    print("test nan:", np.isnan(X_test).any())
-
-    print("train inf:", np.isinf(X_train).any())
-    print("std min:", std.min())
+    else:
+        raise ValueError(f"Unknown norm_mode: {norm_mode}")
 
     train_set = TensorDataset(X_train, y_train)
     val_set = TensorDataset(X_val, y_val)
