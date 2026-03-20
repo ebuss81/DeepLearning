@@ -15,7 +15,7 @@ def CNN_details(trial,device, d_input, d_output):       #note changed!!
     start_dim = trial.suggest_categorical("start_model_dim", [4, 8, 16, 32, 64, 128])
     n_layers = trial.suggest_int("n_layers", 2, 8, step=2)
     dropout = trial.suggest_float("dropout", 0.0, 0.5)
-    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64])
+    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
     kernel_size = trial.suggest_categorical("kernel_size", [5, 9, 17, 33, 65])
     n_mlp = trial.suggest_int("n_mlp", 1, 4)
 
@@ -35,7 +35,7 @@ def CNN_details(trial,device, d_input, d_output):       #note changed!!
 def Inception_details(trial,device, d_input, d_output):
     #lr = trial.suggest_float("lr", 1e-4, 1e-1)
     #weight_decay = trial.suggest_float("weight_decay", 1e-6, 1e-1)
-    lr = trial.suggest_float("lr", 0.001, 0.02, log=True)
+    lr = trial.suggest_float("lr", 1e-4, 1e-2, log=True)
     weight_decay =trial.suggest_float("weight_decay", 1e-6, 1e-3, log=True)
     # d_model = trial.suggest_categorical("d_model", [16, 32, 64, 128, 256, 512])
     # n_layers = trial.suggest_int("n_layers", 2, 20, step=2)
