@@ -50,9 +50,9 @@ best_trial = {
         "mamba": 99
     },
     "30min": {
-        "CNN1D": 76,
-        "Inception1D":75,#89,# 9,
-        "mamba": 92
+        "CNN1D": 1,
+        "Inception1D":85,
+        "mamba": 51
     },
     "1h": {
         "CNN1D": 1,
@@ -459,15 +459,15 @@ if __name__ == "__main__":
 
     runner.load_everything()
 
-    cm = runner.confusion_matrix("val",class_names=["class_0", "class_1","class_2"])
-    print("\nVAL CONFUSION MATRIX")
-    print(cm)
-    cm = runner.confusion_matrix("test",class_names=["class_0", "class_1","class_2"])
-    print("\nTEST CONFUSION MATRIX")
-    print(cm)
+    #cm = runner.confusion_matrix("val",class_names=["class_0", "class_1","class_2"])
+    #print("\nVAL CONFUSION MATRIX")
+    #print(cm)
+    #cm = runner.confusion_matrix("test",class_names=["class_0", "class_1","class_2"])
+    #print("\nTEST CONFUSION MATRIX")
+    #print(cm)
 
     #runner.save_metrics_csv()
     #runner.retrain()
-    #retrain_results = runner.retrain(filename="retrain_history.csv")
-    #print(retrain_results["history"])
+    retrain_results = runner.retrain(filename="retrain_history.csv")
+    print(retrain_results["history"])
     #runner.plot_retrain()
