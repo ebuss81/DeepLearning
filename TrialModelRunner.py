@@ -67,7 +67,7 @@ best_trial = {
     "30min_3classes":{
         "CNN1D":99,
         "Inception1D": 9,
-        "mamba": 25
+        "mamba": 83
     }
 }
 
