@@ -1,8 +1,8 @@
 {
   "experiment": {
     "experiment_name" : "Exp1",
-    "window_length" : "30min_acc",
-    "model" : "Inception1D",
+    "window_length" : "30min_3classes",
+    "model" : "mamba",
     "seed": 42,
     "num_workers": 8
   },
