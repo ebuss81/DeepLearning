@@ -462,7 +462,7 @@ class TrialModelRunner:
         plt.show()
 if __name__ == "__main__":
     runner = TrialModelRunner()
-    runner.load_trained_weights = True#False
+    runner.load_trained_weights = False#True#False
 
     runner.load_everything()
 
