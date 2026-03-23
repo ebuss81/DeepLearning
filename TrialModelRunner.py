@@ -359,9 +359,10 @@ class TrialModelRunner:
             print(f"\n=== Retrain run {idx} | seed={seed} ===")
             set_seed(seed)
 
-            # reset model to the SAME starting point for each seed
-            self.model.load_state_dict(initial_state)
-            self.model.train()
+            self.load_trained_weights = False
+            self._build_model_from_checkpoint()
+            self._create_loaders()
+            self.model.trainn()
 
             optimizer = torch.optim.AdamW(
                 self.model.parameters(),
