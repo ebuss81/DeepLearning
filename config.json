@@ -1,8 +1,8 @@
 {
   "experiment": {
     "experiment_name" : "Exp1",
-    "window_length" : "1h",
-    "model" : "CNN1D",
+    "window_length" : "30min",
+    "model" : "Inception1D",
     "seed": 42,
     "num_workers": 8
   },

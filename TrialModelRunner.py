@@ -25,9 +25,9 @@ from engine.TemperatureScaling import TempScaledModel
 from engine.loop import train_one_epoch, evaluate
 from engine.callbacks import EarlyStopping
 import copy
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use("TkAgg")
+#import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use("TkAgg")
 #@dataclass
 ##class RunnerConfig:
 ##    time_horizon: str
@@ -426,7 +426,7 @@ class TrialModelRunner:
             "save_path": save_path,
             "best_model_path": best_model_path,
         }
-    
+
     def plot_retrain(self):
         df = pd.read_csv(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/retrain_history.csv")
         window = 10
@@ -475,6 +475,6 @@ if __name__ == "__main__":
 
     #runner.save_metrics_csv()
     #runner.retrain()
-    #retrain_results = runner.retrain(filename="retrain_history.csv")
-    #print(retrain_results["history"])
-    runner.plot_retrain()
+    retrain_results = runner.retrain(filename="retrain_history.csv")
+    print(retrain_results["history"])
+    #runner.plot_retrain()
