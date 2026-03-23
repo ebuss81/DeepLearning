@@ -342,9 +342,6 @@ class TrialModelRunner:
         out_dir = f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}"
         os.makedirs(out_dir, exist_ok=True)
 
-        # save initial random initialization / starting weights once
-        initial_state = copy.deepcopy(self.model.state_dict())
-
         best_run_loss = float("inf")
         best_run_epoch = -1
         best_run_seed = None
@@ -352,6 +349,7 @@ class TrialModelRunner:
         best_run_history_df = None
         best_run_model_path = None
         best_run_save_path = None
+        best_run_metrics = None
 
         all_results = []
 
@@ -433,9 +431,18 @@ class TrialModelRunner:
                     print(f"Early stopping at epoch {epoch + 1} for seed {seed}")
                     break
 
-            # restore best weights for this seed
             self.model.load_state_dict(best_state)
             self.model.eval()
+
+            train_best_metrics = evaluate(
+                self.model, self.trainloader, self.criterion, self.device, split_name="train"
+            )
+            val_best_metrics = evaluate(
+                self.model, self.valloader, self.criterion, self.device, split_name="val"
+            )
+            test_best_metrics = evaluate(
+                self.model, self.testloader, self.criterion, self.device, split_name="test"
+            )
 
             history_df = pd.DataFrame(history)
             save_path = f"{out_dir}/retrain_history_{idx}_{seed}.csv"
@@ -446,39 +453,60 @@ class TrialModelRunner:
 
             print(f"Retrain history saved to {save_path}")
             print(f"Best model saved to {best_model_path}")
+            print(
+                f"Best metrics | seed={seed} | "
+                f"train_loss={train_best_metrics['loss']:.6f} | train_acc={train_best_metrics['acc']:.4f} | "
+                f"val_loss={val_best_metrics['loss']:.6f} | val_acc={val_best_metrics['acc']:.4f} | "
+                f"test_loss={test_best_metrics['loss']:.6f} | test_acc={test_best_metrics['acc']:.4f}"
+            )
 
             all_results.append({
                 "run_idx": idx,
                 "seed": seed,
                 "best_epoch": best_epoch,
-                "best_val_loss": best_loss,
+                "train_loss": train_best_metrics["loss"],
+                "train_acc": train_best_metrics["acc"],
+                "val_loss": val_best_metrics["loss"],
+                "val_acc": val_best_metrics["acc"],
+                "test_loss": test_best_metrics["loss"],
+                "test_acc": test_best_metrics["acc"],
                 "history_path": save_path,
                 "model_path": best_model_path,
             })
 
-            # track best run across seeds
-            if best_loss < best_run_loss:
-                best_run_loss = best_loss
+            if val_best_metrics["loss"] < best_run_loss:
+                best_run_loss = val_best_metrics["loss"]
                 best_run_epoch = best_epoch
                 best_run_seed = seed
                 best_run_idx = idx
                 best_run_history_df = history_df
                 best_run_model_path = best_model_path
                 best_run_save_path = save_path
+                best_run_metrics = {
+                    "train_loss": train_best_metrics["loss"],
+                    "train_acc": train_best_metrics["acc"],
+                    "val_loss": val_best_metrics["loss"],
+                    "val_acc": val_best_metrics["acc"],
+                    "test_loss": test_best_metrics["loss"],
+                    "test_acc": test_best_metrics["acc"],
+                }
 
         results_df = pd.DataFrame(all_results)
         results_summary_path = f"{out_dir}/retrain_runs_summary.csv"
         results_df.to_csv(results_summary_path, index=False)
 
         print("\n=== Best retrain run ===")
-        print(f"run_idx={best_run_idx}, seed={best_run_seed}, "
-              f"best_epoch={best_run_epoch}, best_val_loss={best_run_loss:.6f}")
+        print(
+            f"run_idx={best_run_idx}, seed={best_run_seed}, "
+            f"best_epoch={best_run_epoch}, best_val_loss={best_run_loss:.6f}"
+        )
 
         return {
             "best_run_idx": best_run_idx,
             "best_seed": best_run_seed,
             "best_epoch": best_run_epoch,
             "best_val_loss": best_run_loss,
+            "best_metrics": best_run_metrics,
             "history": best_run_history_df,
             "save_path": best_run_save_path,
             "best_model_path": best_run_model_path,
