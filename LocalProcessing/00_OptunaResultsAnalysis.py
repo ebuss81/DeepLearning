@@ -102,7 +102,7 @@ class OptunaResults:
             ##best_row = study_results.loc[study_results['user_attrs_best_train_acc'].idxmax()]
             #print(best_row[my_columns])
             self.plot_all_params(model,study_results)
-            self.inspect_study(model)
+            #self.inspect_study(model)
 
 
 

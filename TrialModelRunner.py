@@ -25,9 +25,9 @@ from engine.TemperatureScaling import TempScaledModel
 from engine.loop import train_one_epoch, evaluate
 from engine.callbacks import EarlyStopping
 import copy
-#import matplotlib.pyplot as plt
-#import matplotlib
-#matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("TkAgg")
 #@dataclass
 ##class RunnerConfig:
 ##    time_horizon: str
@@ -40,14 +40,14 @@ import copy
 
 best_trial = {
     "1min": {
-        "CNN1D": None,
-        "Inception1D": None,
-        "mamba": None
+        "CNN1D": 4,
+        "Inception1D": 97,
+        "mamba": 70
     },
     "5min": {
-        "CNN1D": 94,
-        "Inception1D": 50,
-        "mamba": 99
+        "CNN1D": 29,
+        "Inception1D": 96,
+        "mamba": 84
     },
     "30min": {
         "CNN1D": 1,
@@ -55,14 +55,14 @@ best_trial = {
         "mamba": 51
     },
     "1h": {
-        "CNN1D": 1,
-        "Inception1D": 38,
-        "mamba": 54
+        "CNN1D": 9,
+        "Inception1D": 11,
+        "mamba": 86
     },
     "6h": {
-        "CNN1D": 47,
-        "Inception1D": 77,
-        "mamba": 40
+        "CNN1D": 29,
+        "Inception1D": 59,
+        "mamba": 0
     },
     "30min_3classes":{
         "CNN1D":99,
@@ -412,14 +412,21 @@ class TrialModelRunner:
         history_df = pd.DataFrame(history)
         history_df.to_csv(save_path, index=False)
 
+        # save ONLY best model (weights)
+        best_model_path = f"{out_dir}/best_model.pt"
+        torch.save(self.model.state_dict(), best_model_path)
+
         print(f"Retrain history saved to {save_path}")
+        print(f"Best model saved to {best_model_path}")
 
         return {
             "best_epoch": best_epoch,
             "best_val_loss": best_loss,
             "history": history_df,
             "save_path": save_path,
+            "best_model_path": best_model_path,
         }
+    
     def plot_retrain(self):
         df = pd.read_csv(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/retrain_history.csv")
         window = 10
@@ -468,6 +475,6 @@ if __name__ == "__main__":
 
     #runner.save_metrics_csv()
     #runner.retrain()
-    retrain_results = runner.retrain(filename="retrain_history.csv")
-    print(retrain_results["history"])
-    #runner.plot_retrain()
+    #retrain_results = runner.retrain(filename="retrain_history.csv")
+    #print(retrain_results["history"])
+    runner.plot_retrain()
