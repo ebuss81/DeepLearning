@@ -362,7 +362,7 @@ class TrialModelRunner:
             self.load_trained_weights = False
             self._build_model_from_checkpoint()
             self._create_loaders()
-            self.model.trainn()
+            self.model.train()
 
             optimizer = torch.optim.AdamW(
                 self.model.parameters(),
