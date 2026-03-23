@@ -336,97 +336,154 @@ class TrialModelRunner:
     def retrain(self, max_epochs=None, patience=50, filename="retrain_history.csv"):
         self._require_ready()
 
-        max_epochs = 1000  # or: max_epochs or self.checkpoint.get("epoch", 100)
-
-        optimizer = torch.optim.AdamW(
-            self.model.parameters(),
-            lr=self.lr,
-            weight_decay=self.weight_decay
-        )
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=max_epochs)
-        scaler = torch.cuda.amp.GradScaler(enabled=False)#(self.device == "cuda"))
-        early_stopper = EarlyStopping(patience=patience, mode="min")
-
-        best_state = copy.deepcopy(self.model.state_dict())
-        best_loss = float("inf")
-        best_epoch = -1
-
-        history = []
-
-        for epoch in range(max_epochs):
-            train_metrics = train_one_epoch(
-                self.model,
-                self.trainloader,
-                optimizer,
-                self.criterion,
-                self.device,
-                scaler,
-                save_preds=True
-            )
-            val_metrics = evaluate(
-                self.model,
-                self.valloader,
-                self.criterion,
-                self.device,
-                split_name="val",
-                save_preds=True
-            )
-
-            scheduler.step()
-
-            row = {
-                "epoch": epoch + 1,
-                "train_loss": train_metrics["loss"],
-                "train_acc": train_metrics["acc"],
-                "val_loss": val_metrics["loss"],
-                "val_acc": val_metrics["acc"],
-                "lr": optimizer.param_groups[0]["lr"],
-            }
-            history.append(row)
-
-            if val_metrics["loss"] < best_loss:
-                best_loss = val_metrics["loss"]
-                best_state = copy.deepcopy(self.model.state_dict())
-                best_epoch = epoch + 1
-
-            print(
-                f"Epoch {epoch + 1:03d} | "
-                f"train_loss={row['train_loss']:.6f} | "
-                f"train_acc={row['train_acc']:.4f} | "
-                f"val_loss={row['val_loss']:.6f} | "
-                f"val_acc={row['val_acc']:.4f} |"
-                f"best_epoch={best_epoch :03d} | "
-            )
-
-            if early_stopper.step(val_metrics["loss"], epoch):
-                print(f"Early stopping at epoch {epoch + 1}")
-                break
-
-        self.model.load_state_dict(best_state)
-        self.model.eval()
+        max_epochs = max_epochs or 300
+        seeds = [42, 123, 236, 679, 999]
 
         out_dir = f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}"
         os.makedirs(out_dir, exist_ok=True)
 
-        save_path = f"{out_dir}/{filename}"
-        history_df = pd.DataFrame(history)
-        history_df.to_csv(save_path, index=False)
+        # save initial random initialization / starting weights once
+        initial_state = copy.deepcopy(self.model.state_dict())
 
-        # save ONLY best model (weights)
-        best_model_path = f"{out_dir}/best_model.pt"
-        torch.save(self.model.state_dict(), best_model_path)
+        best_run_loss = float("inf")
+        best_run_epoch = -1
+        best_run_seed = None
+        best_run_idx = None
+        best_run_history_df = None
+        best_run_model_path = None
+        best_run_save_path = None
 
-        print(f"Retrain history saved to {save_path}")
-        print(f"Best model saved to {best_model_path}")
+        all_results = []
+
+        for idx, seed in enumerate(seeds):
+            print(f"\n=== Retrain run {idx} | seed={seed} ===")
+            set_seed(seed)
+
+            # reset model to the SAME starting point for each seed
+            self.model.load_state_dict(initial_state)
+            self.model.train()
+
+            optimizer = torch.optim.AdamW(
+                self.model.parameters(),
+                lr=self.lr,
+                weight_decay=self.weight_decay
+            )
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer, T_max=max_epochs
+            )
+            scaler = torch.cuda.amp.GradScaler(enabled=False)
+            early_stopper = EarlyStopping(patience=patience, mode="min")
+
+            best_state = copy.deepcopy(self.model.state_dict())
+            best_loss = float("inf")
+            best_epoch = -1
+            history = []
+
+            for epoch in range(max_epochs):
+                train_metrics = train_one_epoch(
+                    self.model,
+                    self.trainloader,
+                    optimizer,
+                    self.criterion,
+                    self.device,
+                    scaler,
+                    save_preds=True
+                )
+
+                val_metrics = evaluate(
+                    self.model,
+                    self.valloader,
+                    self.criterion,
+                    self.device,
+                    split_name="val",
+                    save_preds=True
+                )
+
+                scheduler.step()
+
+                row = {
+                    "seed": seed,
+                    "run_idx": idx,
+                    "epoch": epoch + 1,
+                    "train_loss": train_metrics["loss"],
+                    "train_acc": train_metrics["acc"],
+                    "val_loss": val_metrics["loss"],
+                    "val_acc": val_metrics["acc"],
+                    "lr": optimizer.param_groups[0]["lr"],
+                }
+                history.append(row)
+
+                if val_metrics["loss"] < best_loss:
+                    best_loss = val_metrics["loss"]
+                    best_state = copy.deepcopy(self.model.state_dict())
+                    best_epoch = epoch + 1
+
+                print(
+                    f"seed={seed} | "
+                    f"Epoch {epoch + 1:03d} | "
+                    f"train_loss={row['train_loss']:.6f} | "
+                    f"train_acc={row['train_acc']:.4f} | "
+                    f"val_loss={row['val_loss']:.6f} | "
+                    f"val_acc={row['val_acc']:.4f} | "
+                    f"best_epoch={best_epoch:03d}"
+                )
+
+                if early_stopper.step(val_metrics["loss"], epoch):
+                    print(f"Early stopping at epoch {epoch + 1} for seed {seed}")
+                    break
+
+            # restore best weights for this seed
+            self.model.load_state_dict(best_state)
+            self.model.eval()
+
+            history_df = pd.DataFrame(history)
+            save_path = f"{out_dir}/retrain_history_{idx}_{seed}.csv"
+            history_df.to_csv(save_path, index=False)
+
+            best_model_path = f"{out_dir}/best_model_{idx}_{seed}.pt"
+            torch.save(self.model.state_dict(), best_model_path)
+
+            print(f"Retrain history saved to {save_path}")
+            print(f"Best model saved to {best_model_path}")
+
+            all_results.append({
+                "run_idx": idx,
+                "seed": seed,
+                "best_epoch": best_epoch,
+                "best_val_loss": best_loss,
+                "history_path": save_path,
+                "model_path": best_model_path,
+            })
+
+            # track best run across seeds
+            if best_loss < best_run_loss:
+                best_run_loss = best_loss
+                best_run_epoch = best_epoch
+                best_run_seed = seed
+                best_run_idx = idx
+                best_run_history_df = history_df
+                best_run_model_path = best_model_path
+                best_run_save_path = save_path
+
+        results_df = pd.DataFrame(all_results)
+        results_summary_path = f"{out_dir}/retrain_runs_summary.csv"
+        results_df.to_csv(results_summary_path, index=False)
+
+        print("\n=== Best retrain run ===")
+        print(f"run_idx={best_run_idx}, seed={best_run_seed}, "
+              f"best_epoch={best_run_epoch}, best_val_loss={best_run_loss:.6f}")
 
         return {
-            "best_epoch": best_epoch,
-            "best_val_loss": best_loss,
-            "history": history_df,
-            "save_path": save_path,
-            "best_model_path": best_model_path,
+            "best_run_idx": best_run_idx,
+            "best_seed": best_run_seed,
+            "best_epoch": best_run_epoch,
+            "best_val_loss": best_run_loss,
+            "history": best_run_history_df,
+            "save_path": best_run_save_path,
+            "best_model_path": best_run_model_path,
+            "runs_summary_path": results_summary_path,
+            "all_results": results_df,
         }
-
     def plot_retrain(self):
         df = pd.read_csv(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/retrain_history.csv")
         window = 10
@@ -462,7 +519,7 @@ class TrialModelRunner:
         plt.show()
 if __name__ == "__main__":
     runner = TrialModelRunner()
-    runner.load_trained_weights = True#False
+    runner.load_trained_weights = False#True#False
 
     runner.load_everything()
 
@@ -475,6 +532,6 @@ if __name__ == "__main__":
 
     #runner.save_metrics_csv()
     #runner.retrain()
-    retrain_results = runner.retrain(filename="retrain_history.csv")
+    retrain_results = runner.retrain(max_epochs=200)
     print(retrain_results["history"])
     #runner.plot_retrain()
