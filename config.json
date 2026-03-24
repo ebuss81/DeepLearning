@@ -2,7 +2,7 @@
   "experiment": {
     "experiment_name" : "Exp1",
     "window_length" : "6h",
-    "model" : "CNN1D",
+    "model" : "CNN1D"
     "seed": 42,
     "num_workers": 8
   },

@@ -87,6 +87,20 @@ class OptunaResults:
         plot_optimization_history(study).show()
         plot_param_importances(study).show()
 
+    def read_reatrin_summary(self,model):
+        #print(f"{self.exp_p['results_path']}/{self.exp_e['window_length']}/{model}/retrain_runs_summary.csv")
+        df = pd.read_csv(f"{self.exp_p['results_path']}/{self.exp_e['window_length']}/{model}/retrain_runs_summary.csv")  # or comma depending on format
+        metrics_df = df.filter(regex="(loss|acc)")
+        print(metrics_df)
+
+        result = pd.DataFrame({
+            "mean": metrics_df.mean(),
+            "std": metrics_df.std(ddof=0)
+        })
+
+        print(result)
+
+
     def run(self):
         my_columns = ['user_attrs_best_loss','user_attrs_best_test_acc','user_attrs_best_train_acc','user_attrs_best_val_acc']#,'user_attrs_temp_T', 'user_attrs_val_loss_uncal', 'user_attrs_val_loss_cal', 'user_attrs_test_loss_uncal', 'user_attrs_test_loss_cal']
 
@@ -95,14 +109,16 @@ class OptunaResults:
 
 
         for model in self.models:
-            study_results = pd.read_csv(f"{self.exp_p['optuna_path']}/{self.exp_e['window_length']}/{model}/study_trials.csv")
+            print(f"\n{model}\n")
+            #study_results = pd.read_csv(f"{self.exp_p['optuna_path']}/{self.exp_e['window_length']}/{model}/study_trials.csv")
             #print(study_results[my_columns]
-            best_row = study_results.loc[study_results['user_attrs_best_loss'].idxmin()]
-            print(best_row[my_columns])
+            #best_row = study_results.loc[study_results['user_attrs_best_loss'].idxmin()]
+            #print(best_row[my_columns])
             ##best_row = study_results.loc[study_results['user_attrs_best_train_acc'].idxmax()]
             #print(best_row[my_columns])
-            self.plot_all_params(model,study_results)
+            #self.plot_all_params(model,study_results)
             #self.inspect_study(model)
+            self.read_reatrin_summary(model)
 
 
 
