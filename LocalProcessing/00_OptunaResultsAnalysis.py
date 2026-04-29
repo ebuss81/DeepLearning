@@ -110,15 +110,15 @@ class OptunaResults:
 
         for model in self.models:
             print(f"\n{model}\n")
-            #study_results = pd.read_csv(f"{self.exp_p['optuna_path']}/{self.exp_e['window_length']}/{model}/study_trials.csv")
+            study_results = pd.read_csv(f"{self.exp_p['optuna_path']}/{self.exp_e['window_length']}/{model}/study_trials.csv")
             #print(study_results[my_columns]
-            #best_row = study_results.loc[study_results['user_attrs_best_loss'].idxmin()]
-            #print(best_row[my_columns])
+            best_row = study_results.loc[study_results['user_attrs_best_loss'].idxmin()]
+            print(best_row[my_columns])
             ##best_row = study_results.loc[study_results['user_attrs_best_train_acc'].idxmax()]
             #print(best_row[my_columns])
             #self.plot_all_params(model,study_results)
             #self.inspect_study(model)
-            self.read_reatrin_summary(model)
+            #self.read_reatrin_summary(model)
 
 
 

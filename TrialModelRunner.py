@@ -65,9 +65,29 @@ best_trial = {
         "mamba": 0
     },
     "30min_3classes":{
-        "CNN1D":99,
+        "CNN1D":71,
         "Inception1D": 9,
         "mamba": 83
+    },
+    "1min_3classes": {
+        "CNN1D": 59,
+        "Inception1D": None,
+        "mamba": None
+    },
+    "5min_3classes": {
+        "CNN1D": 69,
+        "Inception1D": None,
+        "mamba": None
+    },
+    "1h_3classes": {
+        "CNN1D": 30,
+        "Inception1D": None,
+        "mamba": None
+    },
+    "6h_3classes": {
+        "CNN1D": 2,
+        "Inception1D": None,
+        "mamba": None
     }
 }
 
@@ -81,7 +101,7 @@ class TrialModelRunner:
 
         self.trial = best_trial[self.cfg_e["window_length"]][self.cfg_e["model"]]
         os.makedirs(f"{self.cfg_p['results_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}", exist_ok=True)
-        self.checkpoint_path = f"{self.cfg_p['optuna_path2']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
+        self.checkpoint_path = f"{self.cfg_p['optuna_path']}/{self.cfg_e['window_length']}/{self.cfg_e['model']}/trial_{self.trial}_best.pth"
         set_seed(self.cfg_e["seed"])
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -171,7 +191,7 @@ class TrialModelRunner:
 
     def _load_data(self) -> None:
         try:
-            base_dir = self.cfg_p["data_path2"]
+            base_dir = self.cfg_p["data_path"]
         except KeyError as e:
             base_dir = self.cfg_p["data_path2"]
         print("hi",base_dir)
@@ -548,19 +568,19 @@ class TrialModelRunner:
         plt.show()
 if __name__ == "__main__":
     runner = TrialModelRunner()
-    runner.load_trained_weights = False#True#False
+    runner.load_trained_weights = True#True#False
 
     runner.load_everything()
 
-    #cm = runner.confusion_matrix("val",class_names=["class_0", "class_1","class_2"])
-    #print("\nVAL CONFUSION MATRIX")
-    #print(cm)
-    #cm = runner.confusion_matrix("test",class_names=["class_0", "class_1","class_2"])
-    #print("\nTEST CONFUSION MATRIX")
-    #print(cm)
+    cm = runner.confusion_matrix("val",class_names=["class_0", "class_1","class_2"])
+    print("\nVAL CONFUSION MATRIX")
+    print(cm)
+    cm = runner.confusion_matrix("test",class_names=["class_0", "class_1","class_2"])
+    print("\nTEST CONFUSION MATRIX")
+    print(cm)
 
-    #runner.save_metrics_csv()
+    runner.save_metrics_csv()
     #runner.retrain()
-    retrain_results = runner.retrain(max_epochs=200)
-    print(retrain_results["history"])
+    #retrain_results = runner.retrain(max_epochs=200)
+    #print(retrain_results["history"])
     #runner.plot_retrain()
